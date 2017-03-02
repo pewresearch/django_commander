@@ -9,6 +9,8 @@ class LoggedExtendedModel(COMMAND_BASE_MODEL):
     commands = models.ManyToManyField("django_commander.Command", related_name="%(class)s_related")
     command_logs = models.ManyToManyField("django_commander.CommandLog", related_name="%(class)s_related")
 
+    objects = COMMAND_BASE_MANAGER().as_manager()
+
     class Meta:
 
         abstract=True
