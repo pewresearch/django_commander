@@ -331,7 +331,7 @@ def command_multiprocess_wrapper(command_name, parameters, options, *args):
 # from django.conf import settings
 #
 #
-# path = settings.COMMAND_DIR
+# path = settings.DJANGO_COMMANDER_COMMAND_DIR
 # i = 0
 # path_split = path.split("/")
 # while path_split[i] != settings.SITE_NAME: i += 1

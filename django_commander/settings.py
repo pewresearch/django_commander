@@ -13,11 +13,11 @@ BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 from django.db import models
 
-if not getattr(settings, 'COMMAND_DIR', None):
-    COMMAND_DIR = None
-if not getattr(settings, 'COMMAND_BASE_MODEL', None):
-    COMMAND_BASE_MODEL = models.Model
-if not getattr(settings, 'COMMAND_BASE_MANAGER', None):
+if not getattr(settings, 'DJANGO_COMMANDER_COMMAND_DIR', None):
+    DJANGO_COMMANDER_COMMAND_DIR = None
+if not getattr(settings, 'DJANGO_COMMANDER_BASE_MODEL', None):
+    DJANGO_COMMANDER_BASE_MODEL = models.Model
+if not getattr(settings, 'DJANGO_COMMANDER_BASE_MANAGER', None):
     from pewtils.django.managers import BasicManager
-    COMMAND_BASE_MANAGER = BasicManager
+    DJANGO_COMMANDER_BASE_MANAGER = BasicManager
     # LOADER_BASE_MANAGER = models.QuerySet
