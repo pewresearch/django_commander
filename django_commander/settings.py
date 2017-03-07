@@ -16,7 +16,9 @@ from django.db import models
 if not getattr(settings, 'DJANGO_COMMANDER_COMMAND_DIR', None):
     DJANGO_COMMANDER_COMMAND_DIR = None
 if not getattr(settings, 'DJANGO_COMMANDER_BASE_MODEL', None):
-    DJANGO_COMMANDER_BASE_MODEL = models.Model
+    # DJANGO_COMMANDER_BASE_MODEL = models.Model
+    from pewtils.django.abstract_models import BasicExtendedModel
+    DJANGO_COMMANDER_BASE_MODEL = BasicExtendedModel
 if not getattr(settings, 'DJANGO_COMMANDER_BASE_MANAGER', None):
     from pewtils.django.managers import BasicManager
     DJANGO_COMMANDER_BASE_MANAGER = BasicManager
