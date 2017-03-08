@@ -120,14 +120,14 @@ you have installed, and extracts all of the command classes into a single dictio
 `django_commander.commands.commands`.  You can import this from any app in your project, and run the commands
 manually, if you so choose:
 
-```
+```python
 from django_commander.commands import commands
 commands["scrapers_my_command"](PARAM_VALUE, my_option=OPTION_VALUE).run()
 ```
 
 You can also access commands through the Django ORM:
 
-```
+```python
 from django_commander.models import Command
 my_command = Command.objects.get(name="scrapers_my_command").command_class
 my_command(PARAM_VALUE, my_option=OPTION_VALUE).run()
