@@ -3,8 +3,10 @@ import pkgutil, importlib
 from multiprocessing import Pool
 import datetime, traceback
 
+from django.apps import apps
+
 from pewtils.django import get_model, reset_django_connection, CacheHandler, django_multiprocessor
-from pewtils import is_not_null, classproperty
+from pewtils import is_not_null, classproperty, extract_attributes_from_folder_modules
 
 from django_commander.models import Command, CommandLog
 from django_commander.utils import MissingDependencyException
@@ -147,8 +149,8 @@ class BasicCommand(object):
     def cleanup(self):
 
         raise NotImplementedError
-
-
+    
+    
 class DownloadIterateLoader(BasicCommand):
 
     def download(self, **options):
@@ -263,9 +265,9 @@ class MultiprocessedIterateDownloadLoader(BasicCommand):
             if any([is_not_null(a) for a in dargs]):
                 pargs = [self.name] + [self.parameters] + [self.options] + list(dargs) + list(iargs)
                 if 'test' in self.options.keys() and self.options['test']:
-                    pool.apply(command_multiprocess_wrapper, args=pargs)
+                    pool.apply(loader_multiprocess_wrapper, args=pargs)
                 else:
-                    results.append(pool.apply_async(command_multiprocess_wrapper, args=pargs))
+                    results.append(pool.apply_async(loader_multiprocess_wrapper, args=pargs))
         pool.close()
         pool.join()
         self.process_results(results)
@@ -299,9 +301,9 @@ class MultiprocessedDownloadIterateLoader(BasicCommand):
         for iargs in self.iterate(*dargs):
             iargs = [self.name] + [self.parameters] + [self.options] + list(iargs)
             if 'test' in self.options.keys() and self.options['test']:
-                pool.apply(command_multiprocess_wrapper, args=iargs)
+                pool.apply(loader_multiprocess_wrapper, args=iargs)
             else:
-                results.append(pool.apply_async(command_multiprocess_wrapper, args=iargs))
+                results.append(pool.apply_async(loader_multiprocess_wrapper, args=iargs))
         pool.close()
         pool.join()
         self.process_results(results)
@@ -314,13 +316,13 @@ class MultiprocessedDownloadIterateLoader(BasicCommand):
         raise NotImplementedError
 
 
-def command_multiprocess_wrapper(command_name, parameters, options, *args):
+def loader_multiprocess_wrapper(command_name, parameters, options, *args):
 
     params = {}
     params.update(parameters)
     params.update(options)
     reset_django_connection()
-    from logos.commands import commands
+    from django_commander.commands import commands
     return commands[command_name](**params).parse_and_save(*args)
 
 
@@ -351,3 +353,17 @@ def command_multiprocess_wrapper(command_name, parameters, options, *args):
 #             print "wootier"
 #             command = getattr(module, "Command")
 #             commands[command.name] = command
+
+def _get_command_dirs():
+    command_dirs = []
+    for appconf in apps.get_app_configs():
+        try: dirs = getattr(appconf.module.settings, "DJANGO_COMMANDER_COMMAND_FOLDERS")
+        except AttributeError: dirs = []
+        command_dirs.extend(dirs)
+    return list(set(command_dirs))
+
+commands = {}
+for dir in _get_command_dirs():
+    commands.update(
+        extract_attributes_from_folder_modules(dir, "Command", include_subdirs=True, concat_subdir_names=True)
+    )

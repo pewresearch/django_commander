@@ -4,9 +4,9 @@ from importlib import import_module
 
 from django.core.management.base import CommandError, BaseCommand, handle_default_options
 
-from django_commander.utils import get_project_commands
-
 from pewtils.django.subcommands import SubcommandDispatcher
+
+from django_commander.commands import commands
 
 
 class Subcommand(BaseCommand):
@@ -14,13 +14,13 @@ class Subcommand(BaseCommand):
     def __init__(self, subcommand, *args, **kwargs):
 
         self.subcommand_name = subcommand
-        self.commands = get_project_commands()
+        self.commands = commands
         super(Subcommand, self).__init__(*args, **kwargs)
 
     def create_parser(self, prog_name, subcommand):
 
         parser = super(Subcommand, self).create_parser(prog_name, subcommand)
-        for xparam in self.commands[self.subcommand_name].parameter_defaults:
+        for param in self.commands[self.subcommand_name].parameter_defaults:
 
             param = copy.copy(param)
             name = param.pop("name")
@@ -62,5 +62,5 @@ class Subcommand(BaseCommand):
 
 class Command(SubcommandDispatcher):
 
-    subcommands = get_project_commands().keys()
+    subcommands = commands.keys()
     custom_commander = Subcommand
