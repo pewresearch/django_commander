@@ -1,7 +1,6 @@
 from django.db import models
 from picklefield.fields import PickledObjectField
 
-from django_commander.commands import commands
 from django_commander.settings import DJANGO_COMMANDER_BASE_MODEL, DJANGO_COMMANDER_BASE_MANAGER
 
 
@@ -45,6 +44,7 @@ class Command(DJANGO_COMMANDER_BASE_MODEL):
     @property
     def command_class(self):
 
+        from django_commander.commands import commands
         return commands[self.name]
 
     @property
