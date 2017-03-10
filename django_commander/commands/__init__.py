@@ -5,7 +5,7 @@ import datetime, traceback
 
 from django.apps import apps
 
-from pewtils.django import get_model, reset_django_connection, CacheHandler, django_multiprocessor
+from pewtils.django import get_model, reset_django_connection, CacheHandler, django_multiprocessor, get_app_settings_folders
 from pewtils import is_not_null, classproperty, extract_attributes_from_folder_modules
 
 from django_commander.models import Command, CommandLog
@@ -326,44 +326,8 @@ def loader_multiprocess_wrapper(command_name, parameters, options, *args):
     return commands[command_name](**params).parse_and_save(*args)
 
 
-
-
-
-# import pkgutil, importlib
-# from django.conf import settings
-#
-#
-# path = settings.DJANGO_COMMANDER_COMMAND_DIR
-# i = 0
-# path_split = path.split("/")
-# while path_split[i] != settings.SITE_NAME: i += 1
-# name = ".".join(path_split[i:])
-#
-# print path
-# print name
-#
-# commands = {}
-# path = pkgutil.extend_path(path, name)
-# for importer, modname, ispkg in pkgutil.walk_packages(path=path, prefix=name + '.'):
-#     print modname
-#     if not ispkg:
-#         print "woot"
-#         module = importlib.import_module(modname)
-#         if hasattr(module, "Command"):
-#             print "wootier"
-#             command = getattr(module, "Command")
-#             commands[command.name] = command
-
-def _get_command_dirs():
-    command_dirs = []
-    for appconf in apps.get_app_configs():
-        try: dirs = getattr(appconf.module.settings, "DJANGO_COMMANDER_COMMAND_FOLDERS")
-        except AttributeError: dirs = []
-        command_dirs.extend(dirs)
-    return list(set(command_dirs))
-
 commands = {}
-for dir in _get_command_dirs():
+for dir in get_app_settings_folders("DJANGO_COMMANDER_COMMAND_FOLDERS"):
     commands.update(
         extract_attributes_from_folder_modules(dir, "Command", include_subdirs=True, concat_subdir_names=True)
     )
