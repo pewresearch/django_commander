@@ -1,15 +1,13 @@
 from django.db import models
 from picklefield.fields import PickledObjectField
 
-from django_commander.settings import DJANGO_COMMANDER_BASE_MODEL, DJANGO_COMMANDER_BASE_MANAGER
+from django_commander.settings import DJANGO_COMMANDER_BASE_MODEL
 
 
 class LoggedExtendedModel(DJANGO_COMMANDER_BASE_MODEL):
 
     commands = models.ManyToManyField("django_commander.Command", related_name="%(class)s_related")
     command_logs = models.ManyToManyField("django_commander.CommandLog", related_name="%(class)s_related")
-
-    objects = DJANGO_COMMANDER_BASE_MANAGER().as_manager()
 
     class Meta:
 
@@ -27,8 +25,6 @@ class Command(DJANGO_COMMANDER_BASE_MODEL):
 
     name = models.CharField(max_length=400, db_index=True, help_text="The name of a loader")
     parameters = models.TextField(null=True, help_text="The parameters used to initialize the loader")
-
-    objects = DJANGO_COMMANDER_BASE_MANAGER().as_manager()
 
     class Meta:
 
@@ -68,8 +64,6 @@ class CommandLog(DJANGO_COMMANDER_BASE_MODEL):
     end_time = models.DateTimeField(null=True, help_text="The time at which the loader finished (if applicable)")
     options = models.TextField(null=True, help_text="The options passed to the loader")
     error = PickledObjectField(null=True, help_text="The error returned by the loader (if applicable)")
-
-    objects = DJANGO_COMMANDER_BASE_MANAGER().as_manager()
 
     def __str__(self):
 
