@@ -18,6 +18,7 @@ django_commander requires:
 
 - Python (>= 2.7)
 - Django (>= 1.10)
+- Celery (>=4.0.2)
 - [Pewtils (our own in-house Python utilities)](https://github.com/pewresearch/pewtils)
 
 You'll need to install Pewtils in order for Django Commander to work, but other than that,
@@ -39,6 +40,25 @@ DJANGO_COMMANDER_COMMAND_FOLDERS = [
     os.path.abspath(os.path.join(APP_ROOT, "commands").decode('utf-8')).replace('\\', '/'),
 ]
 ```
+
+#### Multiprocessing and Task Management
+
+In some cases, your commands will be long-running, and you may wish to run them in parallel and/or use
+a task management system to schedule and execute them rather than using cronjobs or the shell.
+Django Commander comes with a convenient wrapper that can run any command as a Celery task:
+`django_commander.utils.run_command_task`.  For this to work, you need to have Celery installed in your main
+application.  The only settings you'll need to add in your main `settings.py` file are:
+
+```python
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+BROKER_URL = 'redis://127.0.0.1:6379/'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/'
+CELERY_ACCEPT_CONTENT = ["pickle", "json"]
+CELERY_TASK_SERIALIZER = "pickle"
+CELERY_RESULT_SERIALIZER = "pickle"
+```
+
+Obviously, adapt the endpoints to connect to whatever broker and backend services you want.
 
 ## Using Django Commander
 
@@ -134,5 +154,9 @@ my_command(PARAM_VALUE, my_option=OPTION_VALUE).run()
 print my_command.logs.order_by("-end_time")[0]
 ```
 
+# TODO: explain the different command and loader classes
+# TODO: explain how to log manually, and using the create_or_update function
+# TODO: explain dependencies
+# TODO: verify that the examples are actually correct (underscore command concatenation, etc)
 
 
