@@ -70,7 +70,7 @@ def cache_results(func):
         if self.options["refresh_data"] or options.get("refresh_data"): data = None
         else: data = self.cache.read(hashstr)
         if not is_not_null(data) or self.options["refresh_data"] or options.get("refresh_data", False):
-            print "Refreshing data from source for downcommand '%s.%s'" % (str(self.__class__.name), str(func.__name__))
+            print "Refreshing data from source for command '%s.%s'" % (str(self.__class__.name), str(func.__name__))
             data = func(self, *args)
             self.cache.write(hashstr, data)
 
@@ -151,22 +151,22 @@ class BasicCommand(object):
         raise NotImplementedError
     
     
-class DownloadIterateLoader(BasicCommand):
+class DownloadIterateCommand(BasicCommand):
 
-    def download(self, **options):
+    def download(self, *args, **options):
         """
         :return: Must return a single list of values that will be passed as positional arguments to iterate
         """
         raise NotImplementedError
 
-    def iterate(self, *args):
+    def iterate(self, *args, **options):
         """
         :param args: Passed from the download function
         :return: Iterate must yield lists of parameters, each of which will be passed as positional arguments to parse_and_save
         """
         raise NotImplementedError
 
-    def parse_and_save(self, *args):
+    def parse_and_save(self, *args, **options):
         """
         :param args: Passed from the iterate function
         :return: None (commits to the database)
@@ -192,22 +192,22 @@ class DownloadIterateLoader(BasicCommand):
         raise NotImplementedError
 
 
-class IterateDownloadLoader(BasicCommand):
+class IterateDownloadCommand(BasicCommand):
 
-    def iterate(self):
+    def iterate(self, *args, **options):
         """
         :return:
         """
         raise NotImplementedError
 
-    def download(self, *args):
+    def download(self, *args, **options):
         """
         :param args:
         :return:
         """
         raise NotImplementedError
 
-    def parse_and_save(self, *args):
+    def parse_and_save(self, *args, **options):
         """
         :param args:
         :return:
@@ -232,22 +232,22 @@ class IterateDownloadLoader(BasicCommand):
         self.cleanup()
 
 
-class MultiprocessedIterateDownloadLoader(BasicCommand):
+class MultiprocessedIterateDownloadCommand(BasicCommand):
 
-    def iterate(self):
+    def iterate(self, *args, **options):
         """
         :return:
         """
         raise NotImplementedError
 
-    def download(self, *args):
+    def download(self, *args, **options):
         """
         :param args:
         :return:
         """
         raise NotImplementedError
 
-    def parse_and_save(self, *args):
+    def parse_and_save(self, *args, **options):
         """
         :param args:
         :return:
@@ -265,9 +265,9 @@ class MultiprocessedIterateDownloadLoader(BasicCommand):
             if any([is_not_null(a) for a in dargs]):
                 pargs = [self.name] + [self.parameters] + [self.options] + list(dargs) + list(iargs)
                 if 'test' in self.options.keys() and self.options['test']:
-                    pool.apply(loader_multiprocess_wrapper, args=pargs)
+                    pool.apply(command_multiprocess_wrapper, args=pargs)
                 else:
-                    results.append(pool.apply_async(loader_multiprocess_wrapper, args=pargs))
+                    results.append(pool.apply_async(command_multiprocess_wrapper, args=pargs))
         pool.close()
         pool.join()
         self.process_results(results)
@@ -280,15 +280,15 @@ class MultiprocessedIterateDownloadLoader(BasicCommand):
         raise NotImplementedError
 
 
-class MultiprocessedDownloadIterateLoader(BasicCommand):
+class MultiprocessedDownloadIterateCommand(BasicCommand):
 
-    def download(self, **options):
+    def download(self, *args, **options):
         raise NotImplementedError
 
-    def iterate(self, *args):
+    def iterate(self, *args, **options):
         raise NotImplementedError
 
-    def parse_and_save(self, *args):
+    def parse_and_save(self, *args, **options):
         raise NotImplementedError
 
     @log_command
@@ -301,9 +301,9 @@ class MultiprocessedDownloadIterateLoader(BasicCommand):
         for iargs in self.iterate(*dargs):
             iargs = [self.name] + [self.parameters] + [self.options] + list(iargs)
             if 'test' in self.options.keys() and self.options['test']:
-                pool.apply(loader_multiprocess_wrapper, args=iargs)
+                pool.apply(command_multiprocess_wrapper, args=iargs)
             else:
-                results.append(pool.apply_async(loader_multiprocess_wrapper, args=iargs))
+                results.append(pool.apply_async(command_multiprocess_wrapper, args=iargs))
         pool.close()
         pool.join()
         self.process_results(results)
@@ -316,7 +316,7 @@ class MultiprocessedDownloadIterateLoader(BasicCommand):
         raise NotImplementedError
 
 
-def loader_multiprocess_wrapper(command_name, parameters, options, *args):
+def command_multiprocess_wrapper(command_name, parameters, options, *args):
 
     params = {}
     params.update(parameters)

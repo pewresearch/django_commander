@@ -68,10 +68,10 @@ Now that you have a folder to hold your commands, you can create your first comm
 inherit from the following classes, found in `django_commander.commands.__init__`:
 
 * `BasicCommand`
-* `DownloadIterateLoader`
-* `IterateDownloadLoader`
-* `MultiprocessedIterateDownloadLoader`
-* `MultiprocessedDownloadIterateLoader`
+* `DownloadIterateCommand`
+* `IterateDownloadCommand`
+* `MultiprocessedIterateDownloadCommand`
+* `MultiprocessedDownloadIterateCommand`
 
 Imagine you create a simple command such as:
 
@@ -154,7 +154,7 @@ my_command(PARAM_VALUE, my_option=OPTION_VALUE).run()
 print my_command.logs.order_by("-end_time")[0]
 ```
 
-# TODO: explain the different command and loader classes
+# TODO: explain the different command and command classes
 # TODO: explain how to log manually, and using the create_or_update function
 # TODO: explain dependencies
 # TODO: verify that the examples are actually correct (underscore command concatenation, etc)
