@@ -1,0 +1,2 @@
+recursive-inside django_commander/templates *
+recursive-inside django_commander/static *
