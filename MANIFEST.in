@@ -1,2 +1,3 @@
-recursive-inside django_commander/templates *
-recursive-inside django_commander/static *
+include README.md
+include requirements.txt
+recursive-exclude django_commander *.pyc
