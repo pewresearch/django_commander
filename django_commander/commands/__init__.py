@@ -109,8 +109,14 @@ class BasicCommand(object):
 
     def __init__(self, *args, **options):
 
-        self.options = {o['name']: options.get(o['name'], o['default']) for o in self.option_defaults}
-        self.parameters = {p['name']: options.get(p['name'], p['default']) for p in self.parameter_defaults}
+        self.parameters, self.options = {}, {}
+        for k, v in options.iteritems():
+            if k in self.parameter_names:
+                self.parameters[k] = v
+            else:
+                self.options[k] = v
+        # self.options = {o['name']: options.get(o['name'], o['default']) for o in self.option_defaults}
+        # self.parameters = {p['name']: options.get(p['name'], p['default']) for p in self.parameter_defaults}
         self.log = None
         self.options["ignore_dependencies"] = options.get("ignore_dependencies", False)
         self.check_dependencies()
@@ -142,6 +148,7 @@ class BasicCommand(object):
                         self.log.delete()
                     raise MissingDependencyException("Missing dependencies: %s" % str(missing))
 
+    @log_command
     def run(self):
 
         raise NotImplementedError
