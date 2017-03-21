@@ -1,7 +1,8 @@
 import pkgutil, importlib
+import datetime, traceback
 
 from multiprocessing import Pool
-import datetime, traceback
+from argparse import ArgumentParser
 
 from django.apps import apps
 
@@ -107,7 +108,22 @@ class BasicCommand(object):
     def name(cls):
         return "_".join(cls.__module__.split(".")[-2:])
 
-    def __init__(self, *args, **options):
+    @classmethod
+    def create_or_modify_parser(cls, parser=None):
+
+        if not parser:
+            parser = ArgumentParser()
+        if hasattr(cls, "add_arguments"):
+            parser = cls.add_arguments(parser)
+        parser.add_argument("--ignore_dependencies", action="store_true", default=False)
+        parser.add_argument("--test", action="store_true", default=False)
+
+        return parser
+
+    def __init__(self, **options):
+
+        dispatched = options.get("dispatched", False)
+        if "dispatched" in options.keys(): del options["dispatched"]
 
         self.parameters, self.options = {}, {}
         for k, v in options.iteritems():
@@ -115,10 +131,28 @@ class BasicCommand(object):
                 self.parameters[k] = v
             else:
                 self.options[k] = v
-        # self.options = {o['name']: options.get(o['name'], o['default']) for o in self.option_defaults}
-        # self.parameters = {p['name']: options.get(p['name'], p['default']) for p in self.parameter_defaults}
+
+        for default_opt in ["ignore_dependencies", "test"]:
+            self.options[default_opt] = options.get(default_opt, False)
+
+        if not dispatched:
+
+            command_string = [self.parameters[p] for p in self.parameter_names]
+            for k, v in self.options.iteritems():
+                if type(v) != bool:
+                    command_string.extend(["--{}".format(k), str(v)])
+                elif v == True:
+                    command_string.append("--{}".format(k))
+            parser = self.create_or_modify_parser()
+            parsed = parser.parse_args(command_string)
+
+            for k, v in vars(parsed).iteritems():
+                if k in self.parameter_names and k not in self.parameters.keys():
+                    self.parameters[k] = v
+                elif k not in self.parameter_names and k not in self.options.keys():
+                    self.options[k] = v
+
         self.log = None
-        self.options["ignore_dependencies"] = options.get("ignore_dependencies", False)
         self.check_dependencies()
         # self.cache_identifier = self.name + str(self.parameters)
         self.cache = CacheHandler("commands/{}".format(self.name))
