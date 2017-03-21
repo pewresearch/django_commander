@@ -14,7 +14,7 @@ with open('requirements.txt') as reqs:
 
 setup(
     name = 'django_commander',
-    version = '0.0.3',
+    version = '0.0.4',
     description = 'Easily create, organize, and log management commands and subcommands',
     long_description = README, # 'http://labs.pewresearch.tech/docs/libs/django_commander',
     url = 'https://github.com/pewresearch/django_commander',
