@@ -1,5 +1,6 @@
 import os
 from setuptools import setup, find_packages
+from django_commander import __version__
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
     README = readme.read()
@@ -16,7 +17,7 @@ with open('requirements.txt') as reqs:
 
 setup(
     name = 'django_commander',
-    version = '0.0.4',
+    version = __version__,
     description = 'Easily create, organize, and log management commands and subcommands',
     long_description = README, # 'http://labs.pewresearch.tech/docs/libs/django_commander',
     url = 'https://github.com/pewresearch/django_commander',
