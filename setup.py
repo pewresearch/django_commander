@@ -1,6 +1,8 @@
 import os
 from setuptools import setup, find_packages
-from django_commander import __version__
+
+with open(os.path.join(os.path.dirname(__file__), "django_commander", "VERSION")) as version_file:
+    __version__ = version_file.read().strip()
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
     README = readme.read()
