@@ -1,0 +1,38 @@
+{% extends "django_commander/_template.html" %}
+
+{% load staticfiles %}
+
+{% block extra_head %}{% endblock %}
+
+{% block modals %}{% endblock %}
+
+{% block body %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Commands</h3>
+                </div>
+                <table class="panel-body table table-condensed">
+                    <tr><th>Command</th><th>Parameters</th><th>Latest Run</th><th></th></tr>
+                    {% for command in commands %}
+                        <tr>
+                            <td>{{ command.command.name }}</td>
+                            <td>{{ command.command.parameters }}</td>
+                            <td>
+                                Start time: {{ command.latest_log.start_time }}, end time: {{ command.latest_log.end_time }}, options: {{ command.latest_log.options }}
+                            </td>
+                            <td>
+                                <a class="btn btn-primary" href="{% url 'django_commander:view_command' command.command.pk %}">View Command</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_body %}{% endblock %}
