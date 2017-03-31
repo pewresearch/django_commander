@@ -1,3 +1,4 @@
 include README.md
+include django_commander/VERSION
 include requirements.txt
 recursive-exclude django_commander *.pyc
