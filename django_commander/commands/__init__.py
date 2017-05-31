@@ -1,10 +1,11 @@
-import pkgutil, importlib
+import pkgutil, importlib, os
 import datetime, traceback
 
 from multiprocessing import Pool
 from argparse import ArgumentParser
 
 from django.apps import apps
+from django.conf import settings
 
 from pewtils.django import get_model, reset_django_connection, CacheHandler, django_multiprocessor, get_app_settings_folders
 from pewtils import is_not_null, classproperty, extract_attributes_from_folder_modules
@@ -155,7 +156,12 @@ class BasicCommand(object):
         self.log = None
         self.check_dependencies()
         # self.cache_identifier = self.name + str(self.parameters)
-        self.cache = CacheHandler("commands/{}".format(self.name))
+        self.cache = CacheHandler(os.path.join(settings.CACHE_PATH, self.name),
+            use_s3=True,
+            bucket=settings.S3_BUCKET,
+            aws_access=settings.AWS_ACCESS_KEY_ID,
+            aws_secret=settings.AWS_SECRET_ACCESS_KEY
+        )
 
     def check_dependencies(self):
 
@@ -193,6 +199,10 @@ class BasicCommand(object):
     
     
 class DownloadIterateCommand(BasicCommand):
+
+    def __init__(self, **options):
+
+        super(DownloadIterateCommand, self).__init__(**options)
 
     def download(self, *args, **options):
         """
@@ -235,6 +245,10 @@ class DownloadIterateCommand(BasicCommand):
 
 class IterateDownloadCommand(BasicCommand):
 
+    def __init__(self, **options):
+
+        super(IterateDownloadCommand, self).__init__(**options)
+
     def iterate(self, *args, **options):
         """
         :return:
@@ -274,6 +288,10 @@ class IterateDownloadCommand(BasicCommand):
 
 
 class MultiprocessedIterateDownloadCommand(BasicCommand):
+
+    def __init__(self, **options):
+
+        super(MultiprocessedIterateDownloadCommand, self).__init__(**options)
 
     def iterate(self, *args, **options):
         """
@@ -322,6 +340,10 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
 
 
 class MultiprocessedDownloadIterateCommand(BasicCommand):
+
+    def __init__(self, **options):
+
+        super(MultiprocessedDownloadIterateCommand, self).__init__(**options)
 
     def download(self, *args, **options):
         raise NotImplementedError
