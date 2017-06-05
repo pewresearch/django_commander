@@ -16,6 +16,7 @@ for setting, default in [
         globals()[setting] = getattr(settings, setting)
 
 CACHE_PATH = os.path.join(globals()["CACHE_ROOT"], "django_commander")
+globals()["CACHE_PATH"] = CACHE_PATH
 
 TEMPLATES = [
     {
