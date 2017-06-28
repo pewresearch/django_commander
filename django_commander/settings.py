@@ -8,15 +8,19 @@ BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 for setting, default in [
     ("DJANGO_COMMANDER_COMMAND_FOLDERS", []),
-    ("CACHE_ROOT", "")
+    ("LOCAL_CACHE_ROOT", ""),
+    ("S3_CACHE_ROOT", "")
 ]:
     if not getattr(settings, setting, None):
         globals()[setting] = default
     else:
         globals()[setting] = getattr(settings, setting)
 
-CACHE_PATH = os.path.join(globals()["CACHE_ROOT"], "django_commander")
-globals()["CACHE_PATH"] = CACHE_PATH
+LOCAL_CACHE_PATH = os.path.join(globals()["LOCAL_CACHE_ROOT"], "django_commander")
+globals()["LOCAL_CACHE_PATH"] = LOCAL_CACHE_PATH
+
+S3_CACHE_PATH = os.path.join(globals()["S3_CACHE_ROOT"], "django_commander")
+globals()["S3_CACHE_PATH"] = S3_CACHE_PATH
 
 TEMPLATES = [
     {

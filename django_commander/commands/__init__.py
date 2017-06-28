@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 
 from django.apps import apps
 from django.conf import settings
-from django_commander.settings import CACHE_PATH
+from django_commander.settings import S3_CACHE_PATH
 
 from pewtils.django import get_model, reset_django_connection, CacheHandler, django_multiprocessor, get_app_settings_folders
 from pewtils import is_not_null, classproperty, extract_attributes_from_folder_modules
@@ -157,7 +157,7 @@ class BasicCommand(object):
         self.log = None
         self.check_dependencies()
         # self.cache_identifier = self.name + str(self.parameters)
-        self.cache = CacheHandler(os.path.join(CACHE_PATH, self.name),
+        self.cache = CacheHandler(os.path.join(S3_CACHE_PATH, self.name),
             use_s3=True,
             bucket=settings.S3_BUCKET,
             aws_access=settings.AWS_ACCESS_KEY_ID,
