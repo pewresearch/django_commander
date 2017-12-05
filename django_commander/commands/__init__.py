@@ -146,13 +146,18 @@ class BasicCommand(object):
                 elif v == True:
                     command_string.append("--{}".format(k))
             parser = self.create_or_modify_parser()
-            parsed = parser.parse_args(command_string)
 
-            for k, v in vars(parsed).iteritems():
-                if k in self.parameter_names and k not in self.parameters.keys():
-                    self.parameters[k] = v
-                elif k not in self.parameter_names and k not in self.options.keys():
-                    self.options[k] = v
+            parsed = None
+            try: parsed = parser.parse_args(command_string)
+            except Exception as e:
+                print "Unable to parse arguments, using whatever was passed in manually to the function, if applicable ({})".format(e)
+
+            if parsed:
+                for k, v in vars(parsed).iteritems():
+                    if k in self.parameter_names and k not in self.parameters.keys():
+                        self.parameters[k] = v
+                    elif k not in self.parameter_names and k not in self.options.keys():
+                        self.options[k] = v
 
         self.log = None
         self.check_dependencies()
