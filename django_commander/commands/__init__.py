@@ -2,6 +2,7 @@ import pkgutil, importlib, os
 import datetime, traceback
 
 from multiprocessing import Pool
+from exceptions import SystemExit
 from argparse import ArgumentParser
 
 from django.apps import apps
@@ -147,17 +148,16 @@ class BasicCommand(object):
                     command_string.append("--{}".format(k))
             parser = self.create_or_modify_parser()
 
-            parsed = None
             try: parsed = parser.parse_args(command_string)
-            except Exception as e:
-                print "Unable to parse arguments, using whatever was passed in manually to the function, if applicable ({})".format(e)
+            except SystemExit:
+                parsed = parser.parse_known_args()[0]
+                print "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
 
-            if parsed:
-                for k, v in vars(parsed).iteritems():
-                    if k in self.parameter_names and k not in self.parameters.keys():
-                        self.parameters[k] = v
-                    elif k not in self.parameter_names and k not in self.options.keys():
-                        self.options[k] = v
+            for k, v in vars(parsed).iteritems():
+                if k in self.parameter_names and k not in self.parameters.keys():
+                    self.parameters[k] = v
+                elif k not in self.parameter_names and k not in self.options.keys():
+                    self.options[k] = v
 
         self.log = None
         self.check_dependencies()
