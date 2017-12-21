@@ -27,7 +27,7 @@ class Subcommand(BaseCommand):
 
     def handle(self, *args, **options):
 
-        run_command_task.apply_async(args=(self.subcommand_name, options), queue='celery')
+        run_command_task.apply_async((self.subcommand_name, options), queue='celery')
         
 
 class Command(SubcommandDispatcher):
