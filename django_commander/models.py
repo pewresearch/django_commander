@@ -2,6 +2,7 @@ from django.db import models
 from picklefield.fields import PickledObjectField
 
 from pewtils.django.abstract_models import BasicExtendedModel
+from pewtils.django import get_model
 
 
 class LoggedExtendedModel(BasicExtendedModel):
@@ -64,6 +65,7 @@ class CommandLog(BasicExtendedModel):
     end_time = models.DateTimeField(null=True, help_text="The time at which the command finished (if applicable)")
     options = models.TextField(null=True, help_text="The options passed to the command")
     error = PickledObjectField(null=True, help_text="The error returned by the command (if applicable)")
+    celery_task_id = models.TextField(null=True)
 
     def __str__(self):
 
@@ -75,3 +77,8 @@ class CommandLog(BasicExtendedModel):
             str(self.pk),
             status
         )
+
+    @property
+    def celery_task(self):
+
+        return get_model("TaskResult", app_name="django_celery_results").objects.get(task_id=self.celery_task_id)
