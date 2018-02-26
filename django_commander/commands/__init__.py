@@ -28,7 +28,7 @@ def log_command(handle):
         )
         self.log_id = int(self.log.pk)
         try:
-            handle(self, *args, **options)
+            result = handle(self, *args, **options)
             if self.log:
                 self.log.end_time = datetime.datetime.now()
                 try: self.log.save()
@@ -38,6 +38,7 @@ def log_command(handle):
                     self.log = CommandLog.objects.get(pk=self.log_id)
                     self.log.end_time = datetime.datetime.now()
                     self.log.save()
+            return result
         except Exception as e:
             tb = traceback.format_exc()
             print e
@@ -55,6 +56,7 @@ def log_command(handle):
                         "exception": str(e)
                     }
                     self.log.save()
+            return None
     return wrapper
 
 
