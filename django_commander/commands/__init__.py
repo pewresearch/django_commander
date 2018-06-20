@@ -164,11 +164,46 @@ class BasicCommand(object):
         self.log = None
         self.check_dependencies()
         # self.cache_identifier = self.name + str(self.parameters)
-        self.cache = CacheHandler(os.path.join(S3_CACHE_PATH, self.name),
-            use_s3=True,
-            bucket=settings.S3_BUCKET,
-            aws_access=settings.AWS_ACCESS_KEY_ID,
-            aws_secret=settings.AWS_SECRET_ACCESS_KEY
+
+        cache_params = {
+            'use_s3': True,
+            'aws_access': os.environ.get("AWS_ACCESS_KEY_ID", None),
+            'aws_secret': os.environ.get("AWS_SECRET_ACCESS_KEY", None),
+            'bucket': os.environ.get("S3_BUCKET", None)
+        }
+
+        if cache_params['aws_access'] is None:
+            if getattr(settings, 'AWS_ACCESS_KEY_ID', None) is not None:
+                cache_params['aws_access'] = settings.AWS_ACCESS_KEY_ID
+
+            else:
+                cache_params.pop('aws_access', None)
+
+        if cache_params['aws_secret'] is None:
+            if getattr(settings, 'AWS_SECRET_ACCESS_KEY', None) is not None:
+                cache_params['aws_secret'] = settings.AWS_SECRET_ACCESS_KEY
+
+            else:
+                cache_params.pop('aws_secret', None)
+
+        if cache_params['bucket'] is None:
+            if getattr(settings, 'S3_BUCKET', None) is not None:
+                cache_params['bucket'] = settings.S3_BUCKET
+
+            else:
+                cache_params.pop('bucket', None)
+
+        if not all(
+            map(
+                lambda x: x in cache_params and cache_params[x] is not None,
+                ('aws_access', 'aws_secret', 'bucket')
+            )
+        ):
+            cache_params['use_s3'] = False
+
+        self.cache = CacheHandler(
+            os.path.join(S3_CACHE_PATH, self.name),
+            **cache_params
         )
 
     def check_dependencies(self):
@@ -204,8 +239,8 @@ class BasicCommand(object):
     def cleanup(self):
 
         raise NotImplementedError
-    
-    
+
+
 class DownloadIterateCommand(BasicCommand):
 
     def __init__(self, **options):
