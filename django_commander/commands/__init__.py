@@ -111,7 +111,8 @@ class BasicCommand(object):
 
     @classproperty
     def name(cls):
-        return "_".join(cls.__module__.split(".")[-2:])
+        has_root_folder_prefix = "_".join(cls.__module__.split(".")[-2:])
+        return "_".join(has_root_folder_prefix.split("_")[1:])
 
     @classmethod
     def create_or_modify_parser(cls, parser=None):
@@ -166,9 +167,9 @@ class BasicCommand(object):
         # self.cache_identifier = self.name + str(self.parameters)
         self.cache = CacheHandler(os.path.join(S3_CACHE_PATH, self.name),
             use_s3=True,
-            bucket=settings.S3_BUCKET,
-            aws_access=settings.AWS_ACCESS_KEY_ID,
-            aws_secret=settings.AWS_SECRET_ACCESS_KEY
+            bucket=settings.S3_BUCKET if hasattr(settings, "S3_BUCKET") else None,
+            aws_access=settings.AWS_ACCESS_KEY_ID if hasattr(settings, "AWS_ACCESS_KEY_ID") else None,
+            aws_secret=settings.AWS_SECRET_ACCESS_KEY if hasattr(settings, "AWS_SECRET_ACCESS_KEY") else None
         )
 
     def check_dependencies(self):
@@ -331,8 +332,9 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
             dargs = self.download(*iargs)
             if any([is_not_null(a) for a in dargs]):
                 pargs = [self.name] + [self.parameters] + [self.options] + list(dargs) + list(iargs)
-                if 'test' in self.options.keys() and self.options['test']:
-                    pool.apply(command_multiprocess_wrapper, args=pargs)
+                if ('test' in self.options.keys() and self.options['test']) or self.options['num_cores'] == 1:
+                    # pool.apply(command_multiprocess_wrapper, args=pargs)
+                    command_multiprocess_wrapper(*pargs)
                 else:
                     results.append(pool.apply_async(command_multiprocess_wrapper, args=pargs))
         pool.close()
@@ -371,8 +373,9 @@ class MultiprocessedDownloadIterateCommand(BasicCommand):
         pool = Pool(processes=self.options["num_cores"])
         for iargs in self.iterate(*dargs):
             iargs = [self.name] + [self.parameters] + [self.options] + list(iargs)
-            if 'test' in self.options.keys() and self.options['test']:
-                pool.apply(command_multiprocess_wrapper, args=iargs)
+            if ('test' in self.options.keys() and self.options['test']) or self.options['num_cores'] == 1:
+                # pool.apply(command_multiprocess_wrapper, args=iargs)
+                command_multiprocess_wrapper(*iargs)
             else:
                 results.append(pool.apply_async(command_multiprocess_wrapper, args=iargs))
         pool.close()
