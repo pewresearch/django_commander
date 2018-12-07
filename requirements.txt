@@ -3,3 +3,4 @@ django-rq>=0.9.5
 celery>=4.0.2
 flower>=0.9.2
 git+ssh://labsdeploy/pewresearch/pewtils#egg=pewtils
+git+ssh://labsdeploy/pewresearch/django_pewtils#egg=django_pewtils
