@@ -9,7 +9,7 @@ from django.apps import apps
 from django.conf import settings
 from django_commander.settings import S3_CACHE_PATH
 
-from pewtils.django import get_model, reset_django_connection, CacheHandler, django_multiprocessor, get_app_settings_folders
+from django_pewtils import get_model, reset_django_connection, CacheHandler, django_multiprocessor, get_app_settings_folders
 from pewtils import is_not_null, classproperty, extract_attributes_from_folder_modules
 
 from django_commander.models import Command, CommandLog

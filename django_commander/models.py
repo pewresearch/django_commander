@@ -1,8 +1,8 @@
 from django.db import models
 from picklefield.fields import PickledObjectField
 
-from pewtils.django.abstract_models import BasicExtendedModel
-from pewtils.django import get_model
+from django_pewtils.abstract_models import BasicExtendedModel
+from django_pewtils import get_model
 
 
 class LoggedExtendedModel(BasicExtendedModel):

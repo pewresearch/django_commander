@@ -5,8 +5,8 @@ from importlib import import_module
 from django.conf import settings
 from django.core.management.base import CommandError, BaseCommand, handle_default_options
 
-from pewtils.django.subcommands import SubcommandDispatcher
-from pewtils.django import get_model
+from django_pewtils.subcommands import SubcommandDispatcher
+from django_pewtils import get_model
 
 from django_commander.commands import commands
 from django_commander.utils import run_command_task
