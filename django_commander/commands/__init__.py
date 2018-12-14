@@ -151,19 +151,33 @@ class BasicCommand(object):
                     command_string.append("--{}".format(k))
             parser = self.create_or_modify_parser()
 
+            skip = False
             try: parsed = parser.parse_args(command_string)
-            except SystemExit:
-                parsed = parser.parse_known_args()[0]
+            except (SystemExit, TypeError):
+                try:
+                    parsed = parser.parse_known_args()[0]
+                    print "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                except SystemExit:
+                    print "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                    skip = True
+                except Exception as e:
+                    print "UNKNOWN ERROR: {}".format(e)
+                    print "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                    skip = True
+            except Exception as e:
+                print "UNKNOWN ERROR: {}".format(e)
                 print "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
-
-            for k, v in vars(parsed).iteritems():
-                if k in self.parameter_names and k not in self.parameters.keys():
-                    self.parameters[k] = v
-                elif k not in self.parameter_names and k not in self.options.keys():
-                    self.options[k] = v
+                skip = True
+            if not skip:
+                for k, v in vars(parsed).iteritems():
+                    if k in self.parameter_names and k not in self.parameters.keys():
+                        self.parameters[k] = v
+                    elif k not in self.parameter_names and k not in self.options.keys():
+                        self.options[k] = v
 
         self.log = None
-        self.check_dependencies()
+        if dispatched:
+            self.check_dependencies()
         # self.cache_identifier = self.name + str(self.parameters)
         self.cache = CacheHandler(os.path.join(S3_CACHE_PATH, self.name),
             use_s3=True,
