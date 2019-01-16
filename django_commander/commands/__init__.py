@@ -1,4 +1,9 @@
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import input
+from builtins import str
+from builtins import object
 import pkgutil, importlib, os
 import datetime, traceback
 
@@ -130,10 +135,10 @@ class BasicCommand(object):
     def __init__(self, **options):
 
         dispatched = options.get("dispatched", False)
-        if "dispatched" in options.keys(): del options["dispatched"]
+        if "dispatched" in list(options.keys()): del options["dispatched"]
 
         self.parameters, self.options = {}, {}
-        for k, v in options.iteritems():
+        for k, v in options.items():
             if k in self.parameter_names:
                 self.parameters[k] = v
             else:
@@ -145,7 +150,7 @@ class BasicCommand(object):
         if not dispatched:
 
             command_string = [self.parameters[p] for p in self.parameter_names]
-            for k, v in self.options.iteritems():
+            for k, v in self.options.items():
                 if type(v) != bool:
                     command_string.extend(["--{}".format(k), str(v)])
                 elif v == True:
@@ -170,10 +175,10 @@ class BasicCommand(object):
                 print("Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable")
                 skip = True
             if not skip:
-                for k, v in vars(parsed).iteritems():
-                    if k in self.parameter_names and k not in self.parameters.keys():
+                for k, v in vars(parsed).items():
+                    if k in self.parameter_names and k not in list(self.parameters.keys()):
                         self.parameters[k] = v
-                    elif k not in self.parameter_names and k not in self.options.keys():
+                    elif k not in self.parameter_names and k not in list(self.options.keys()):
                         self.options[k] = v
 
         self.log = None
@@ -210,10 +215,7 @@ class BasicCommand(object):
                 cache_params.pop('bucket', None)
 
         if not all(
-            map(
-                lambda x: x in cache_params and cache_params[x] is not None,
-                ('aws_access', 'aws_secret', 'bucket')
-            )
+            [x in cache_params and cache_params[x] is not None for x in ('aws_access', 'aws_secret', 'bucket')]
         ):
             cache_params['use_s3'] = False
 
@@ -240,7 +242,7 @@ class BasicCommand(object):
             if len(missing) > 0 and not self.options["ignore_dependencies"]:
                 choice = ""
                 while choice.lower() not in ["y", "n"]:
-                    choice = str(raw_input("Missing dependencies: %s.  Do you want to continue? (y/n) >> " % str(missing)))
+                    choice = str(input("Missing dependencies: %s.  Do you want to continue? (y/n) >> " % str(missing)))
                 print(choice)
                 if choice.lower() == "n":
                     if self.log:
@@ -382,7 +384,7 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
             dargs = self.download(*iargs)
             if any([is_not_null(a) for a in dargs]):
                 pargs = [self.name] + [self.parameters] + [self.options] + list(dargs) + list(iargs)
-                if ('test' in self.options.keys() and self.options['test']) or self.options['num_cores'] == 1:
+                if ('test' in list(self.options.keys()) and self.options['test']) or self.options['num_cores'] == 1:
                     # pool.apply(command_multiprocess_wrapper, args=pargs)
                     command_multiprocess_wrapper(*pargs)
                 else:
@@ -423,7 +425,7 @@ class MultiprocessedDownloadIterateCommand(BasicCommand):
         pool = Pool(processes=self.options["num_cores"])
         for iargs in self.iterate(*dargs):
             iargs = [self.name] + [self.parameters] + [self.options] + list(iargs)
-            if ('test' in self.options.keys() and self.options['test']) or self.options['num_cores'] == 1:
+            if ('test' in list(self.options.keys()) and self.options['test']) or self.options['num_cores'] == 1:
                 # pool.apply(command_multiprocess_wrapper, args=iargs)
                 command_multiprocess_wrapper(*iargs)
             else:

@@ -1,3 +1,5 @@
+from future import standard_library
+standard_library.install_aliases()
 import sys, datetime, traceback, copy
 from optparse import NO_DEFAULT, OptionParser
 from importlib import import_module
@@ -32,5 +34,5 @@ class Subcommand(BaseCommand):
 
 class Command(SubcommandDispatcher):
 
-    subcommands = commands.keys()
+    subcommands = list(commands.keys())
     custom_commander = Subcommand

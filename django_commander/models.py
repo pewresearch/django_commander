@@ -1,3 +1,5 @@
+from builtins import str
+from builtins import object
 from django.db import models
 from picklefield.fields import PickledObjectField
 
@@ -10,7 +12,7 @@ class LoggedExtendedModel(BasicExtendedModel):
     commands = models.ManyToManyField("django_commander.Command", related_name="%(class)s_related")
     command_logs = models.ManyToManyField("django_commander.CommandLog", related_name="%(class)s_related")
 
-    class Meta:
+    class Meta(object):
 
         abstract=True
 
@@ -27,7 +29,7 @@ class Command(BasicExtendedModel):
     name = models.CharField(max_length=400, db_index=True, help_text="The name of a command")
     parameters = models.TextField(null=True, help_text="The parameters used to initialize the command")
 
-    class Meta:
+    class Meta(object):
 
         unique_together = ("name", "parameters")
 
