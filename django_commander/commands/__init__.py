@@ -10,8 +10,7 @@ from django.conf import settings
 from django_commander.settings import S3_CACHE_PATH
 
 from django_pewtils import get_model, reset_django_connection, CacheHandler, django_multiprocessor, get_app_settings_folders
-from pewtils import is_not_null, extract_attributes_from_folder_modules
-from pewtils.internal import classproperty
+from pewtils import is_not_null, extract_attributes_from_folder_modules, classproperty
 
 from django_commander.models import Command, CommandLog
 from django_commander.utils import MissingDependencyException
