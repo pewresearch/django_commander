@@ -1,3 +1,4 @@
+from __future__ import print_function
 import pkgutil, importlib, os
 import datetime, traceback
 
@@ -41,8 +42,8 @@ def log_command(handle):
             return result
         except Exception as e:
             tb = traceback.format_exc()
-            print e
-            print tb
+            print(e)
+            print(tb)
             if self.log:
                 try:
                     self.log.error = {
@@ -76,7 +77,7 @@ def cache_results(func):
         if self.options["refresh_data"] or options.get("refresh_data"): data = None
         else: data = self.cache.read(hashstr)
         if not is_not_null(data) or self.options["refresh_data"] or options.get("refresh_data", False):
-            print "Refreshing data from source for command '%s.%s'" % (str(self.__class__.name), str(func.__name__))
+            print("Refreshing data from source for command '%s.%s'" % (str(self.__class__.name), str(func.__name__)))
             data = func(self, *args)
             self.cache.write(hashstr, data)
 
@@ -156,17 +157,17 @@ class BasicCommand(object):
             except (SystemExit, TypeError):
                 try:
                     parsed = parser.parse_known_args()[0]
-                    print "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                    print("Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable")
                 except SystemExit:
-                    print "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                    print("Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable")
                     skip = True
                 except Exception as e:
-                    print "UNKNOWN ERROR: {}".format(e)
-                    print "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                    print("UNKNOWN ERROR: {}".format(e))
+                    print("Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable")
                     skip = True
             except Exception as e:
-                print "UNKNOWN ERROR: {}".format(e)
-                print "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                print("UNKNOWN ERROR: {}".format(e))
+                print("Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable")
                 skip = True
             if not skip:
                 for k, v in vars(parsed).iteritems():
@@ -240,7 +241,7 @@ class BasicCommand(object):
                 choice = ""
                 while choice.lower() not in ["y", "n"]:
                     choice = str(raw_input("Missing dependencies: %s.  Do you want to continue? (y/n) >> " % str(missing)))
-                print choice
+                print(choice)
                 if choice.lower() == "n":
                     if self.log:
                         self.log.delete()
@@ -337,7 +338,7 @@ class IterateDownloadCommand(BasicCommand):
             if any([is_not_null(a) for a in dargs]):
                 try: self.parse_and_save(*(dargs + iargs))
                 except TypeError:
-                    print "Outdated cache, refreshing data"
+                    print("Outdated cache, refreshing data")
                     dargs = self.download(*iargs, **{"refresh_data": True})
                     if any([is_not_null(a) for a in dargs]):
                         self.parse_and_save(*(dargs + iargs))

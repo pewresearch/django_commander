@@ -1,3 +1,4 @@
+from __future__ import print_function
 from tqdm import tqdm
 
 from django_commander.models import Command
@@ -27,5 +28,5 @@ class Command(BasicCommand):
                         keeper = command.logs.order_by("-start_time")[0]
                         command.logs.exclude(pk=keeper.pk).delete()
             except Exception as e:
-                print command
-                print e
+                print(command)
+                print(e)
