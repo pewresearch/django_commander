@@ -29,10 +29,4 @@ def test_commands():
                 params.update(commands[command_name].test_options)
             if hasattr(commands[command_name], "test_parameters"):
                 params.update(commands[command_name].test_parameters)
-            try:
-                commands[command_name](**params).run()
-                print("{} - SUCCESS".format(command_name))
-            except Exception as e:
-                print("{} - FAILURE - {}".format(command_name, e))
-        else:
-            print("{} - NOT CONFIGURED FOR TESTING".format(command_name))
+            commands[command_name](**params).run()

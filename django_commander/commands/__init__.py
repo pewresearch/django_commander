@@ -9,7 +9,6 @@ import pkgutil, importlib, os
 import datetime, traceback
 
 from multiprocessing import Pool
-from exceptions import SystemExit
 from argparse import ArgumentParser
 
 from django.apps import apps
