@@ -142,7 +142,7 @@ class BasicCommand(object):
         if "dispatched" in list(options.keys()): del options["dispatched"]
 
         self.parameters, self.options = {}, {}
-        for k, v in options.items():
+        for k, v in list(options.items()):
             if k in self.parameter_names:
                 self.parameters[k] = v
             else:
@@ -159,7 +159,7 @@ class BasicCommand(object):
         if not dispatched:
 
             command_string = [self.parameters[p] for p in self.parameter_names]
-            for k, v in self.options.items():
+            for k, v in list(self.options.items()):
                 if type(v) != bool:
                     command_string.extend(["--{}".format(k), str(v)])
                 elif v == True:
@@ -189,7 +189,7 @@ class BasicCommand(object):
                     "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable")
                 skip = True
             if not skip:
-                for k, v in vars(parsed).items():
+                for k, v in list(vars(parsed).items()):
                     if k in self.parameter_names and k not in list(self.parameters.keys()):
                         self.parameters[k] = v
                     elif k not in self.parameter_names and k not in list(self.options.keys()):
@@ -263,7 +263,7 @@ class BasicCommand(object):
             if len(missing) > 0 and not self.options["ignore_dependencies"]:
                 choice = ""
                 while choice.lower() not in ["y", "n"]:
-                    choice = str(input("Missing dependencies: %s.  Do you want to continue? (y/n) >> " % str(missing)))
+                    choice = str(eval(input("Missing dependencies: %s.  Do you want to continue? (y/n) >> " % str(missing))))
                 print(choice)
                 if choice.lower() == "n":
                     if self.log:

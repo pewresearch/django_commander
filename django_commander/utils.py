@@ -1,3 +1,5 @@
+from future import standard_library
+standard_library.install_aliases()
 from celery import shared_task
 
 
@@ -19,7 +21,7 @@ def run_command_task(command_name, params):
 def test_commands():
 
     from django_commander.commands import commands
-    for command_name in commands.keys():
+    for command_name in list(commands.keys()):
         params = {"test": True}
         if hasattr(commands[command_name], "test_options"):
             params.update(commands[command_name].test_options)
