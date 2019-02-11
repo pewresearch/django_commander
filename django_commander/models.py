@@ -9,6 +9,16 @@ from django_pewtils import get_model
 
 class LoggedExtendedModel(BasicExtendedModel):
 
+    """
+    This abstract model can be used as a base class on any model that you want to track.  All of the commands in
+    django_commander (i.e. BasicCommand and everything that inherits from it) are automatically logged in the database
+    with a unique Command row that's a combination of the command's name and the parameters passed to it, and when
+    a command is run, it is logged with a new row in the CommandLog table.  You can also choose to write your commands
+    such that they create associations in the database with objects that they modify.  If those objects inherit from
+    LoggedExtendedModel, you can add the command directly (`my_object.command_logs.add(self.log)`) or you can pass
+    `self.log` to django_pewtils' `.create_or_update` function, which will automatically create the association.
+    """
+
     commands = models.ManyToManyField("django_commander.Command", related_name="%(class)s_related")
     command_logs = models.ManyToManyField("django_commander.CommandLog", related_name="%(class)s_related")
 
@@ -22,8 +32,8 @@ class Command(BasicExtendedModel):
     """
     Refers to a command class that's used to load data into the database.  Parameters are values used that have a bearing
     on the data that get loaded in, and so the name and parameters, taken together, refer to a specific set of data
-    loaded by a specific process.  Most models in Logos have ManyToMany relationships with Commands, so we can track
-    the sources from which a given object's data have been pulled.
+    loaded by a specific process.  If your app's models inherit from LoggedExtendedModel, you can use M2M relations
+    with CommandLog and Command to track the sources from which a given object's data have been pulled, for example.
     """
 
     name = models.CharField(max_length=400, db_index=True, help_text="The name of a command")
