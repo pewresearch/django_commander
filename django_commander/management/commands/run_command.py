@@ -1,5 +1,4 @@
-from future import standard_library
-standard_library.install_aliases()
+
 import sys, datetime, traceback, copy
 from optparse import NO_DEFAULT, OptionParser
 from importlib import import_module

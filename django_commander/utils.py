@@ -1,5 +1,4 @@
-from future import standard_library
-standard_library.install_aliases()
+
 from celery import shared_task
 
 
