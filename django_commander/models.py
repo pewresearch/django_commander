@@ -94,3 +94,12 @@ class CommandLog(BasicExtendedModel):
     def celery_task(self):
 
         return get_model("TaskResult", app_name="django_celery_results").objects.get(task_id=self.celery_task_id)
+
+
+from django.db.models.signals import m2m_changed
+def update_command_m2m(sender, **kwargs):
+    if kwargs['action'] == 'post_add' and "instance" in kwargs and kwargs["instance"]:
+        obj = kwargs['instance']
+        commands = Command.objects.filter(pk__in=obj.command_logs.values_list("command_id", flat=True))
+        obj.commands.set(commands)
+m2m_changed.connect(update_command_m2m, sender=LoggedExtendedModel.command_logs.through)
