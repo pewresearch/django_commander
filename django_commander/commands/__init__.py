@@ -193,8 +193,7 @@ class BasicCommand(object):
                         self.options[k] = v
 
         self.log = None
-        if dispatched:
-            self.check_dependencies()
+        self.check_dependencies(dispatched=dispatched)
 
         cache_params = {
             'use_s3': True,
@@ -241,7 +240,7 @@ class BasicCommand(object):
                 **cache_params
             )
 
-    def check_dependencies(self):
+    def check_dependencies(self, dispatched=False):
 
         if hasattr(self, "dependencies"):
             missing = []
@@ -257,13 +256,16 @@ class BasicCommand(object):
                 if logs.count() == 0:
                     missing.append((d, params))
             if len(missing) > 0 and not self.options["ignore_dependencies"]:
-                choice = ""
-                while choice.lower() not in ["y", "n"]:
-                    choice = str(eval(input("Missing dependencies: %s.  Do you want to continue? (y/n) >> " % str(missing))))
-                print(choice)
-                if choice.lower() == "n":
-                    if self.log:
-                        self.log.delete()
+                if dispatched:
+                    choice = ""
+                    while choice.lower() not in ["y", "n"]:
+                        choice = str(eval(input("Missing dependencies: %s.  Do you want to continue? (y/n) >> " % str(missing))))
+                    print(choice)
+                    if choice.lower() == "n":
+                        if self.log:
+                            self.log.delete()
+                        raise MissingDependencyException("Missing dependencies: %s" % str(missing))
+                else:
                     raise MissingDependencyException("Missing dependencies: %s" % str(missing))
 
     @log_command
