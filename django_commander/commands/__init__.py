@@ -11,7 +11,6 @@ from argparse import ArgumentParser
 
 from django.apps import apps
 from django.conf import settings
-from django_commander.settings import S3_CACHE_PATH
 
 from django_pewtils import get_model, reset_django_connection, CacheHandler, django_multiprocessor, \
     get_app_settings_folders
@@ -195,50 +194,16 @@ class BasicCommand(object):
         self.log = None
         self.check_dependencies(dispatched=dispatched)
 
-        cache_params = {
-            'use_s3': True,
-            'aws_access': os.environ.get("AWS_ACCESS_KEY_ID", None),
-            'aws_secret': os.environ.get("AWS_SECRET_ACCESS_KEY", None),
-            'bucket': os.environ.get("S3_BUCKET", None)
-        }
-
-        if cache_params['aws_access'] is None:
-            if getattr(settings, 'AWS_ACCESS_KEY_ID', None) is not None:
-                cache_params['aws_access'] = settings.AWS_ACCESS_KEY_ID
-
-            else:
-                cache_params.pop('aws_access', None)
-
-        if cache_params['aws_secret'] is None:
-            if getattr(settings, 'AWS_SECRET_ACCESS_KEY', None) is not None:
-                cache_params['aws_secret'] = settings.AWS_SECRET_ACCESS_KEY
-
-            else:
-                cache_params.pop('aws_secret', None)
-
-        if cache_params['bucket'] is None:
-            if getattr(settings, 'S3_BUCKET', None) is not None:
-                cache_params['bucket'] = settings.S3_BUCKET
-
-            else:
-                cache_params.pop('bucket', None)
-
-        # NOTE: you may not need AWS credentials if an instance is configured using IAM roles
-        # if not all(
-        #     [x in cache_params and cache_params[x] is not None for x in ('aws_access', 'aws_secret', 'bucket')]
-        # ):
-        #     cache_params['use_s3'] = False
-
-        if self.options["test"]:
-            self.cache = CacheHandler(
-                os.path.join(S3_CACHE_PATH, self.name, "test"),
-                **cache_params
-            )
-        else:
-            self.cache = CacheHandler(
-                os.path.join(S3_CACHE_PATH, self.name),
-                **cache_params
-            )
+        if self.options["test"]: path = os.path.join(settings.S3_CACHE_PATH, self.name, "test")
+        else: path = os.path.join(settings.S3_CACHE_PATH, self.name)
+        self.cache = CacheHandler(
+            os.path.join(settings.S3_CACHE_PATH, "datasets"),
+            hash=False,
+            use_s3=settings.DJANGO_COMMANDER_USE_S3,
+            aws_access=settings.AWS_ACCESS_KEY_ID,
+            aws_secret=settings.AWS_SECRET_ACCESS_KEY,
+            bucket=settings.S3_BUCKET
+        )
 
     def check_dependencies(self, dispatched=False):
 
