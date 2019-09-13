@@ -48,6 +48,7 @@ class BaseTests(DjangoTestCase):
             self.assertGreater(log.child_related.count(), 0)
 
         # # Haven't figured out how to test multiprocessing; the unit testing module keeps the db in a single transaction
+        # # Also, when you trigger manage.py externally, it's going to try to use the main database, not the test one
         # process = subprocess.Popen(
         #     ['python', 'manage.py', 'run_command_task', 'test_command', 'bob', '--child_name', 'jeff'],
         #     stdout=subprocess.PIPE,
