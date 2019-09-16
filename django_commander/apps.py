@@ -7,7 +7,7 @@ DJANGO_COMMANDER_BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 class DjangoCommanderConfig(AppConfig):
     name = 'django_commander'
 
-    def ready(self):
+    def update_settings(self):
 
         from django.conf import settings
         for setting, default in [
@@ -19,7 +19,8 @@ class DjangoCommanderConfig(AppConfig):
             ("S3_CACHE_ROOT", "cache"),
             ("DJANGO_COMMANDER_USE_S3", False)
         ]:
-            setattr(settings, setting, default)
+            if not hasattr(settings, setting):
+                setattr(settings, setting, default)
 
         LOCAL_CACHE_PATH = os.path.join(settings.LOCAL_CACHE_ROOT, "django_queries")
         setattr(settings, "LOCAL_CACHE_PATH", LOCAL_CACHE_PATH)
@@ -35,3 +36,10 @@ class DjangoCommanderConfig(AppConfig):
             template["DIRS"].append(os.path.join(DJANGO_COMMANDER_BASE_DIR, "templates"))
             new_templates.append(template)
         setattr(settings, "TEMPLATES", new_templates)
+
+    def __init__(self, *args, **kwargs):
+        super(DjangoCommanderConfig, self).__init__(*args, **kwargs)
+        self.update_settings()
+
+    def ready(self):
+        self.update_settings()
