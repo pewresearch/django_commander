@@ -6,7 +6,10 @@ from django_commander.models import LoggedExtendedModel
 class Child(LoggedExtendedModel):
 
     name = models.TextField()
-    parent = models.ForeignKey("testapp.Parent", related_name="children", on_delete=models.CASCADE)
+    parent = models.ForeignKey(
+        "testapp.Parent", related_name="children", on_delete=models.CASCADE
+    )
+
 
 class Parent(LoggedExtendedModel):
 

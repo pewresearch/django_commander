@@ -12,8 +12,13 @@ from argparse import ArgumentParser
 from django.apps import apps
 from django.conf import settings
 
-from django_pewtils import get_model, reset_django_connection, CacheHandler, django_multiprocessor, \
-    get_app_settings_folders
+from django_pewtils import (
+    get_model,
+    reset_django_connection,
+    CacheHandler,
+    django_multiprocessor,
+    get_app_settings_folders,
+)
 from pewtils import is_not_null, extract_attributes_from_folder_modules, classproperty
 
 from django_commander.models import Command, CommandLog
@@ -22,13 +27,11 @@ from django_commander.utils import MissingDependencyException
 
 def log_command(handle):
     def wrapper(self, *args, **options):
-        self.command = Command.objects.create_or_update({
-            "name": self.name,
-            "parameters": str(self.parameters)
-        })
+        self.command = Command.objects.create_or_update(
+            {"name": self.name, "parameters": str(self.parameters)}
+        )
         self.log = CommandLog.objects.create(
-            command=self.command,
-            options=str(self.options)
+            command=self.command, options=str(self.options)
         )
         self.log_id = int(self.log.pk)
         try:
@@ -50,16 +53,10 @@ def log_command(handle):
             print(tb)
             if self.log:
                 try:
-                    self.log.error = {
-                        "traceback": tb,
-                        "exception": e
-                    }
+                    self.log.error = {"traceback": tb, "exception": e}
                     self.log.save()
                 except:
-                    self.log.error = {
-                        "traceback": str(tb),
-                        "exception": str(e)
-                    }
+                    self.log.error = {"traceback": str(tb), "exception": str(e)}
                     self.log.save()
             return None
 
@@ -77,13 +74,25 @@ def cache_results(func):
         it just loads from the prod cache.
         """
 
-        hashstr = str(self.__class__.name) + str(func.__name__) + str(args) + str(self.parameters)
+        hashstr = (
+            str(self.__class__.name)
+            + str(func.__name__)
+            + str(args)
+            + str(self.parameters)
+        )
         if self.options["refresh_data"] or options.get("refresh_data"):
             data = None
         else:
             data = self.cache.read(hashstr)
-        if not is_not_null(data) or self.options["refresh_data"] or options.get("refresh_data", False):
-            print("Refreshing data from source for command '%s.%s'" % (str(self.__class__.name), str(func.__name__)))
+        if (
+            not is_not_null(data)
+            or self.options["refresh_data"]
+            or options.get("refresh_data", False)
+        ):
+            print(
+                "Refreshing data from source for command '%s.%s'"
+                % (str(self.__class__.name), str(func.__name__))
+            )
             data = func(self, *args)
             self.cache.write(hashstr, data)
 
@@ -135,7 +144,8 @@ class BasicCommand(object):
     def __init__(self, **options):
 
         dispatched = options.get("dispatched", False)
-        if "dispatched" in list(options.keys()): del options["dispatched"]
+        if "dispatched" in list(options.keys()):
+            del options["dispatched"]
 
         self.parameters, self.options = {}, {}
         for k, v in list(options.items()):
@@ -169,40 +179,50 @@ class BasicCommand(object):
                 try:
                     parsed = parser.parse_known_args()[0]
                     print(
-                        "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable")
+                        "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                    )
                 except SystemExit:
                     print(
-                        "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable")
+                        "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                    )
                     skip = True
                 except Exception as e:
                     print("UNKNOWN ERROR: {}".format(e))
                     print(
-                        "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable")
+                        "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                    )
                     skip = True
             except Exception as e:
                 print("UNKNOWN ERROR: {}".format(e))
                 print(
-                    "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable")
+                    "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                )
                 skip = True
             if not skip:
                 for k, v in list(vars(parsed).items()):
-                    if k in self.parameter_names and k not in list(self.parameters.keys()):
+                    if k in self.parameter_names and k not in list(
+                        self.parameters.keys()
+                    ):
                         self.parameters[k] = v
-                    elif k not in self.parameter_names and k not in list(self.options.keys()):
+                    elif k not in self.parameter_names and k not in list(
+                        self.options.keys()
+                    ):
                         self.options[k] = v
 
         self.log = None
         self.check_dependencies(dispatched=dispatched)
 
-        if self.options["test"]: path = os.path.join(settings.S3_CACHE_PATH, self.name, "test")
-        else: path = os.path.join(settings.S3_CACHE_PATH, self.name)
+        if self.options["test"]:
+            path = os.path.join(settings.S3_CACHE_PATH, self.name, "test")
+        else:
+            path = os.path.join(settings.S3_CACHE_PATH, self.name)
         self.cache = CacheHandler(
             os.path.join(settings.S3_CACHE_PATH, "datasets"),
             hash=False,
             use_s3=settings.DJANGO_COMMANDER_USE_S3,
             aws_access=settings.AWS_ACCESS_KEY_ID,
             aws_secret=settings.AWS_SECRET_ACCESS_KEY,
-            bucket=settings.S3_BUCKET
+            bucket=settings.S3_BUCKET,
         )
 
     def check_dependencies(self, dispatched=False):
@@ -210,28 +230,45 @@ class BasicCommand(object):
         if hasattr(self, "dependencies"):
             missing = []
             for d, params in self.dependencies:
-                logs = CommandLog.objects.filter(command__name=d).filter(end_time__isnull=False).filter(
-                    error__isnull=True)
+                logs = (
+                    CommandLog.objects.filter(command__name=d)
+                    .filter(end_time__isnull=False)
+                    .filter(error__isnull=True)
+                )
                 for p in params:
                     if type(params[p]) == type(lambda x: x):
                         params[p] = params[p](self)
                     else:
                         params[p] = str(params[p])
-                    logs = logs.filter(command__parameters__regex=r"[\"']?%s[\"']?\: [\"']?%s[\"']?" % (p, params[p]))
+                    logs = logs.filter(
+                        command__parameters__regex=r"[\"']?%s[\"']?\: [\"']?%s[\"']?"
+                        % (p, params[p])
+                    )
                 if logs.count() == 0:
                     missing.append((d, params))
             if len(missing) > 0 and not self.options["ignore_dependencies"]:
                 if dispatched:
                     choice = ""
                     while choice.lower() not in ["y", "n"]:
-                        choice = str(eval(input("Missing dependencies: %s.  Do you want to continue? (y/n) >> " % str(missing))))
+                        choice = str(
+                            eval(
+                                input(
+                                    "Missing dependencies: %s.  Do you want to continue? (y/n) >> "
+                                    % str(missing)
+                                )
+                            )
+                        )
                     print(choice)
                     if choice.lower() == "n":
                         if self.log:
                             self.log.delete()
-                        raise MissingDependencyException("Missing dependencies: %s" % str(missing))
+                        raise MissingDependencyException(
+                            "Missing dependencies: %s" % str(missing)
+                        )
                 else:
-                    raise MissingDependencyException("Missing dependencies: %s" % str(missing))
+                    raise MissingDependencyException(
+                        "Missing dependencies: %s" % str(missing)
+                    )
 
     @log_command
     def run(self):
@@ -244,7 +281,6 @@ class BasicCommand(object):
 
 
 class DownloadIterateCommand(BasicCommand):
-
     def __init__(self, **options):
 
         super(DownloadIterateCommand, self).__init__(**options)
@@ -288,7 +324,6 @@ class DownloadIterateCommand(BasicCommand):
 
 
 class IterateDownloadCommand(BasicCommand):
-
     def __init__(self, **options):
 
         super(IterateDownloadCommand, self).__init__(**options)
@@ -332,7 +367,6 @@ class IterateDownloadCommand(BasicCommand):
 
 
 class MultiprocessedIterateDownloadCommand(BasicCommand):
-
     def __init__(self, **options):
 
         super(MultiprocessedIterateDownloadCommand, self).__init__(**options)
@@ -366,12 +400,22 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
         for iargs in self.iterate():
             dargs = self.download(*iargs)
             if any([is_not_null(a) for a in dargs]):
-                pargs = [self.name] + [self.parameters] + [self.options] + list(dargs) + list(iargs)
-                if ('test' in list(self.options.keys()) and self.options['test']) or self.options['num_cores'] == 1:
+                pargs = (
+                    [self.name]
+                    + [self.parameters]
+                    + [self.options]
+                    + list(dargs)
+                    + list(iargs)
+                )
+                if (
+                    "test" in list(self.options.keys()) and self.options["test"]
+                ) or self.options["num_cores"] == 1:
                     # pool.apply(command_multiprocess_wrapper, args=pargs)
                     command_multiprocess_wrapper(*pargs)
                 else:
-                    results.append(pool.apply_async(command_multiprocess_wrapper, args=pargs))
+                    results.append(
+                        pool.apply_async(command_multiprocess_wrapper, args=pargs)
+                    )
         pool.close()
         pool.join()
         self.process_results(results)
@@ -385,7 +429,6 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
 
 
 class MultiprocessedDownloadIterateCommand(BasicCommand):
-
     def __init__(self, **options):
 
         super(MultiprocessedDownloadIterateCommand, self).__init__(**options)
@@ -408,11 +451,15 @@ class MultiprocessedDownloadIterateCommand(BasicCommand):
         pool = Pool(processes=self.options["num_cores"])
         for iargs in self.iterate(*dargs):
             iargs = [self.name] + [self.parameters] + [self.options] + list(iargs)
-            if ('test' in list(self.options.keys()) and self.options['test']) or self.options['num_cores'] == 1:
+            if (
+                "test" in list(self.options.keys()) and self.options["test"]
+            ) or self.options["num_cores"] == 1:
                 # pool.apply(command_multiprocess_wrapper, args=iargs)
                 command_multiprocess_wrapper(*iargs)
             else:
-                results.append(pool.apply_async(command_multiprocess_wrapper, args=iargs))
+                results.append(
+                    pool.apply_async(command_multiprocess_wrapper, args=iargs)
+                )
         pool.close()
         pool.join()
         self.process_results(results)
@@ -431,11 +478,14 @@ def command_multiprocess_wrapper(command_name, parameters, options, *args):
     params.update(options)
     reset_django_connection()
     from django_commander.commands import commands
+
     return commands[command_name](**params).parse_and_save(*args)
 
 
 commands = {}
 for dir in get_app_settings_folders("DJANGO_COMMANDER_COMMAND_FOLDERS"):
     commands.update(
-        extract_attributes_from_folder_modules(dir, "Command", include_subdirs=True, concat_subdir_names=True)
+        extract_attributes_from_folder_modules(
+            dir, "Command", include_subdirs=True, concat_subdir_names=True
+        )
     )

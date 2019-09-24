@@ -11,34 +11,91 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Command',
+            name="Command",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(db_index=True, help_text=b'The name of a command', max_length=400)),
-                ('parameters', models.TextField(help_text=b'The parameters used to initialize the command', null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        db_index=True,
+                        help_text=b"The name of a command",
+                        max_length=400,
+                    ),
+                ),
+                (
+                    "parameters",
+                    models.TextField(
+                        help_text=b"The parameters used to initialize the command",
+                        null=True,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='CommandLog',
+            name="CommandLog",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start_time', models.DateTimeField(auto_now_add=True, help_text=b'The time at which the command began executing')),
-                ('end_time', models.DateTimeField(help_text=b'The time at which the command finished (if applicable)', null=True)),
-                ('options', models.TextField(help_text=b'The options passed to the command', null=True)),
-                ('error', picklefield.fields.PickledObjectField(editable=False, help_text=b'The error returned by the command (if applicable)', null=True)),
-                ('command', models.ForeignKey(help_text=b'The parent command', on_delete=django.db.models.deletion.CASCADE, related_name='logs', to='django_commander.Command')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "start_time",
+                    models.DateTimeField(
+                        auto_now_add=True,
+                        help_text=b"The time at which the command began executing",
+                    ),
+                ),
+                (
+                    "end_time",
+                    models.DateTimeField(
+                        help_text=b"The time at which the command finished (if applicable)",
+                        null=True,
+                    ),
+                ),
+                (
+                    "options",
+                    models.TextField(
+                        help_text=b"The options passed to the command", null=True
+                    ),
+                ),
+                (
+                    "error",
+                    picklefield.fields.PickledObjectField(
+                        editable=False,
+                        help_text=b"The error returned by the command (if applicable)",
+                        null=True,
+                    ),
+                ),
+                (
+                    "command",
+                    models.ForeignKey(
+                        help_text=b"The parent command",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="logs",
+                        to="django_commander.Command",
+                    ),
+                ),
             ],
-            options={
-                'abstract': False,
-            },
+            options={"abstract": False},
         ),
         migrations.AlterUniqueTogether(
-            name='command',
-            unique_together=set([('name', 'parameters')]),
+            name="command", unique_together=set([("name", "parameters")])
         ),
     ]
