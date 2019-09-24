@@ -10,38 +10,72 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-        ('django_commander', '0003_auto_20171221_1121'),
-    ]
+    dependencies = [("django_commander", "0003_auto_20171221_1121")]
 
     operations = [
         migrations.CreateModel(
-            name='Child',
+            name="Child",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.TextField()),
-                ('command_logs', models.ManyToManyField(related_name='child_related', to='django_commander.CommandLog')),
-                ('commands', models.ManyToManyField(related_name='child_related', to='django_commander.Command')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.TextField()),
+                (
+                    "command_logs",
+                    models.ManyToManyField(
+                        related_name="child_related", to="django_commander.CommandLog"
+                    ),
+                ),
+                (
+                    "commands",
+                    models.ManyToManyField(
+                        related_name="child_related", to="django_commander.Command"
+                    ),
+                ),
             ],
-            options={
-                'abstract': False,
-            },
+            options={"abstract": False},
         ),
         migrations.CreateModel(
-            name='Parent',
+            name="Parent",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.TextField(null=True)),
-                ('command_logs', models.ManyToManyField(related_name='parent_related', to='django_commander.CommandLog')),
-                ('commands', models.ManyToManyField(related_name='parent_related', to='django_commander.Command')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.TextField(null=True)),
+                (
+                    "command_logs",
+                    models.ManyToManyField(
+                        related_name="parent_related", to="django_commander.CommandLog"
+                    ),
+                ),
+                (
+                    "commands",
+                    models.ManyToManyField(
+                        related_name="parent_related", to="django_commander.Command"
+                    ),
+                ),
             ],
-            options={
-                'abstract': False,
-            },
+            options={"abstract": False},
         ),
         migrations.AddField(
-            model_name='child',
-            name='parent',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='children', to='testapp.Parent'),
+            model_name="child",
+            name="parent",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="children",
+                to="testapp.Parent",
+            ),
         ),
     ]
