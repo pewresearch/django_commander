@@ -1,9 +1,12 @@
-
 import sys, datetime, traceback, copy
 from optparse import NO_DEFAULT, OptionParser
 from importlib import import_module
 
-from django.core.management.base import CommandError, BaseCommand, handle_default_options
+from django.core.management.base import (
+    CommandError,
+    BaseCommand,
+    handle_default_options,
+)
 
 from django_pewtils.subcommands import SubcommandDispatcher
 
@@ -11,7 +14,6 @@ from django_commander.commands import commands
 
 
 class Subcommand(BaseCommand):
-
     def __init__(self, subcommand, *args, **kwargs):
 
         self.subcommand_name = subcommand
