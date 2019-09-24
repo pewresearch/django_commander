@@ -24,7 +24,9 @@ class BaseTests(DjangoTestCase):
 
         with self.assertRaises(MissingDependencyException):
             commands["test_command_with_dependency"](parent_name="bob").run()
-        commands["test_command_with_dependency"](parent_name="bob", ignore_dependencies=True).run()
+        commands["test_command_with_dependency"](
+            parent_name="bob", ignore_dependencies=True
+        ).run()
         commands["test_command"](parent_name="bob").run()
         _, sally = commands["test_command"](parent_name="bob", child_name="sally").run()
         bob, child = commands["test_command_with_dependency"](parent_name="bob").run()
@@ -55,7 +57,6 @@ class BaseTests(DjangoTestCase):
         #     stderr=subprocess.PIPE
         # )
         # stdout, stderr = process.communicate()
-
 
     def tearDown(self):
         pass
