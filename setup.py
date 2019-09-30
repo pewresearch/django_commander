@@ -2,6 +2,7 @@ from builtins import str
 import os
 from setuptools import setup, find_packages
 
+
 with open(
     os.path.join(os.path.dirname(__file__), "django_commander", "VERSION"), "rb"
 ) as version_file:
