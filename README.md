@@ -77,7 +77,7 @@ inherit from the following classes, found in `django_commander.commands.__init__
 Imagine you create a simple command such as:
 
 ```python
-
+from __future__ import absolute_import
 from django_commander.commands import BasicCommand
 
 class Command(BasicCommand):
@@ -103,6 +103,8 @@ class Command(BasicCommand):
         pass
 
 ```
+
+NOTE: in Python 2, all commands must have `from __future__ import absolute_import` at the start of the file
 
 If you put this in your command module (found somewhere in one of your `DJANGO_COMMANDER_COMMAND_FOLDERS`),
 then you can immediately run it via `manage.py` - for starters, let's put it in the root command directory
