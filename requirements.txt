@@ -1,7 +1,46 @@
+beautifulsoup4>=4.5.3
+boto>=2.46.1
+boto3>=1.4.4
+celery>=4.0.2
+chardet>=2.3.0
+Cython>=0.25.2
 django<2.0; python_version < '3.0'
 django>=2.2; python_version >= '3.0'
+django-picklefield>=2.0
 django-rq>=0.9.5
-celery>=4.0.2
 flower>=0.9.2
+future
+fuzzywuzzy>=0.15.0
+gensim>=3.8.1
+lxml>=4.4.1
+hdbscan>=0.8.18
+matplotlib>=2.2.4
+mca>=1.0.3
+nilsimsa>=0.3.8
+nltk>=3.2.2
+numpy==1.16.0; python_version < '3.0'
+numpy>=1.16.0; python_version > '3.0'
+pandas>=0.19.2
+polyglot
+psycopg2-binary>=2.8.3
+python-dateutil>=2.6.0
+python-Levenshtein>=0.12.0
+pytz>=2016.10
+requests>=2.13.0
+scandir>=1.5
+scipy<=1.2; python_version < '3.0'
+scipy>=1.2; python_version >= '3.0'
+seaborn>=0.9.0
+simplejson>=3.10.0
+ssdeep>=3.3
+statsmodels>=0.10.1
+stopit>=1.1.2
+tldextract>=2.2.1
+tqdm>=4.11.2
+unicode
+Unidecode>=0.4.20
+xlsxwriter>=1.1.8
+xlrd>=1.2.0
 git+ssh://labsdeploy/pewresearch/pewtils#egg=pewtils
 git+ssh://labsdeploy/pewresearch/django_pewtils#egg=django_pewtils
+
