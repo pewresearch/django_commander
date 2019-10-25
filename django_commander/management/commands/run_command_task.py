@@ -9,9 +9,9 @@ from django.core.management.base import (
     handle_default_options,
 )
 
-from django_pewtils.subcommands import SubcommandDispatcher
 from django_pewtils import get_model
 
+from django_commander.utils import SubcommandDispatcher
 from django_commander.commands import commands
 from django_commander.utils import run_command_task
 

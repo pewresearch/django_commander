@@ -8,8 +8,7 @@ from django.core.management.base import (
     handle_default_options,
 )
 
-from django_pewtils.subcommands import SubcommandDispatcher
-
+from django_commander.utils import SubcommandDispatcher
 from django_commander.commands import commands
 
 
