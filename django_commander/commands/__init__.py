@@ -16,7 +16,6 @@ from django_pewtils import (
     get_model,
     reset_django_connection,
     CacheHandler,
-    django_multiprocessor,
     get_app_settings_folders,
 )
 from pewtils import is_not_null, extract_attributes_from_folder_modules, classproperty
