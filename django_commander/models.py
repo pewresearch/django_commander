@@ -7,36 +7,6 @@ from django_pewtils.abstract_models import BasicExtendedModel
 from django_pewtils import get_model
 
 
-# TODO: move this over from django_pewtils, figure out where to put it
-# Was originally on BasicExtendedManager
-# def get_existing_command_records(self, name_regex, parameters_regex):
-#     commands = (
-#         get_model("Command", app_name="django_commander")
-#             .objects.filter(name__regex=name_regex)
-#             .filter(parameters__regex=parameters_regex)
-#     )
-#
-#     return self.filter(commands__in=commands)
-#
-#
-# def get_orphaned_command_records(
-#         self, name_regex, parameters_regex, whitelist, whitelist_field="pk"
-# ):
-#     commands = (
-#         get_model("Command", app_name="django_commander")
-#             .objects.filter(name__regex=name_regex)
-#             .filter(parameters__regex=parameters_regex)
-#     )
-#     command_count = commands.count()
-#
-#     return (
-#         self.annotate(c=Count("commands"))
-#             .filter(c=command_count)
-#             .filter(commands__in=commands)
-#             .exclude(**{"%s__in" % whitelist_field: whitelist})
-#     )
-
-
 class LoggedExtendedModel(BasicExtendedModel):
 
     """
