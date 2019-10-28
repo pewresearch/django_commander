@@ -197,15 +197,21 @@ class BasicCommand(object):
 
         raise NotImplementedError
 
-    def cleanup(self):
-
-        raise NotImplementedError
-
 
 class DownloadIterateCommand(BasicCommand):
     def __init__(self, **options):
 
         super(DownloadIterateCommand, self).__init__(**options)
+
+    @classmethod
+    def create_or_modify_parser(cls, parser=None):
+
+        parser = super(DownloadIterateCommand, cls).create_or_modify_parser(
+            parser=parser
+        )
+        parser.add_argument("--refresh_cache", action="store_true", default=False)
+
+        return parser
 
     def download(self, *args, **options):
         """
@@ -241,11 +247,25 @@ class DownloadIterateCommand(BasicCommand):
                 self.parse_and_save(*iargs)
         self.cleanup()
 
+    def cleanup(self):
+
+        raise NotImplementedError
+
 
 class IterateDownloadCommand(BasicCommand):
     def __init__(self, **options):
 
         super(IterateDownloadCommand, self).__init__(**options)
+
+    @classmethod
+    def create_or_modify_parser(cls, parser=None):
+
+        parser = super(IterateDownloadCommand, cls).create_or_modify_parser(
+            parser=parser
+        )
+        parser.add_argument("--refresh_cache", action="store_true", default=False)
+
+        return parser
 
     def iterate(self, *args, **options):
         """
@@ -284,11 +304,25 @@ class IterateDownloadCommand(BasicCommand):
 
         self.cleanup()
 
+    def cleanup(self):
+
+        raise NotImplementedError
+
 
 class MultiprocessedIterateDownloadCommand(BasicCommand):
     def __init__(self, **options):
 
         super(MultiprocessedIterateDownloadCommand, self).__init__(**options)
+
+    @classmethod
+    def create_or_modify_parser(cls, parser=None):
+
+        parser = super(
+            MultiprocessedIterateDownloadCommand, cls
+        ).create_or_modify_parser(parser=parser)
+        parser.add_argument("--refresh_cache", action="store_true", default=False)
+
+        return parser
 
     def iterate(self, *args, **options):
         """
@@ -339,11 +373,25 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
         pool.join()
         self.process_results(results)
 
+    def cleanup(self):
+
+        raise NotImplementedError
+
 
 class MultiprocessedDownloadIterateCommand(BasicCommand):
     def __init__(self, **options):
 
         super(MultiprocessedDownloadIterateCommand, self).__init__(**options)
+
+    @classmethod
+    def create_or_modify_parser(cls, parser=None):
+
+        parser = super(
+            MultiprocessedDownloadIterateCommand, cls
+        ).create_or_modify_parser(parser=parser)
+        parser.add_argument("--refresh_cache", action="store_true", default=False)
+
+        return parser
 
     def download(self, *args, **options):
         raise NotImplementedError
@@ -375,6 +423,10 @@ class MultiprocessedDownloadIterateCommand(BasicCommand):
         pool.close()
         pool.join()
         self.process_results(results)
+
+    def cleanup(self):
+
+        raise NotImplementedError
 
 
 commands = {}
