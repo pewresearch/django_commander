@@ -49,6 +49,39 @@ class BaseTests(DjangoTestCase):
             self.assertGreater(log.parent_related.count(), 0)
             self.assertGreater(log.child_related.count(), 0)
 
+        Parent.objects.filter(name__in=["bob", "shelly"]).delete()
+        commands["test_download_iterate_command"]().run()
+        self.assertEqual(Parent.objects.filter(name="bob").count(), 1)
+        self.assertEqual(Parent.objects.filter(name="shelly").count(), 1)
+        self.assertEqual(
+            Parent.objects.get(name="bob")
+            .commands.filter(name="test_download_iterate_command")
+            .count(),
+            1,
+        )
+        self.assertEqual(
+            Parent.objects.get(name="shelly")
+            .commands.filter(name="test_download_iterate_command")
+            .count(),
+            1,
+        )
+
+        commands["test_iterate_download_command"]().run()
+        self.assertEqual(Parent.objects.filter(name="BOB").count(), 1)
+        self.assertEqual(Parent.objects.filter(name="SHELLY").count(), 1)
+        self.assertEqual(
+            Parent.objects.get(name="BOB")
+            .commands.filter(name="test_iterate_download_command")
+            .count(),
+            1,
+        )
+        self.assertEqual(
+            Parent.objects.get(name="SHELLY")
+            .commands.filter(name="test_iterate_download_command")
+            .count(),
+            1,
+        )
+
         # # Haven't figured out how to test multiprocessing; the unit testing module keeps the db in a single transaction
         # # Also, when you trigger manage.py externally, it's going to try to use the main database, not the test one
         # process = subprocess.Popen(
