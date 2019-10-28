@@ -1,10 +1,11 @@
 from builtins import str
 from builtins import object
 from django.db import models
+from django.contrib.postgres.fields import JSONField
 from picklefield.fields import PickledObjectField
 
 from django_pewtils.abstract_models import BasicExtendedModel
-from django_pewtils import get_model
+from django_pewtils import get_model, consolidate_objects
 
 
 class LoggedExtendedModel(BasicExtendedModel):
@@ -43,8 +44,8 @@ class Command(BasicExtendedModel):
     name = models.CharField(
         max_length=400, db_index=True, help_text="The name of a command"
     )
-    parameters = models.TextField(
-        null=True, help_text="The parameters used to initialize the command"
+    parameters = JSONField(
+        default=dict, help_text="The parameters used to initialize the command"
     )
 
     class Meta(object):
@@ -65,7 +66,7 @@ class Command(BasicExtendedModel):
     @property
     def command(self):
 
-        return self.command_class()
+        return self.command_class(**self.parameters)
 
     def run(self):
 
@@ -90,7 +91,7 @@ class CommandLog(BasicExtendedModel):
     end_time = models.DateTimeField(
         null=True, help_text="The time at which the command finished (if applicable)"
     )
-    options = models.TextField(null=True, help_text="The options passed to the command")
+    options = JSONField(default=dict, help_text="The options passed to the command")
     error = PickledObjectField(
         null=True, help_text="The error returned by the command (if applicable)"
     )
@@ -120,10 +121,11 @@ from django.db.models.signals import m2m_changed
 def update_command_m2m(sender, **kwargs):
     if kwargs["action"] == "post_add" and "instance" in kwargs and kwargs["instance"]:
         obj = kwargs["instance"]
-        commands = Command.objects.filter(
-            pk__in=obj.command_logs.values_list("command_id", flat=True)
-        )
-        obj.commands.set(commands)
+        if obj._meta.model != CommandLog:
+            commands = Command.objects.filter(
+                pk__in=obj.command_logs.values_list("command_id", flat=True)
+            )
+            obj.commands.set(commands)
 
 
 m2m_changed.connect(update_command_m2m, sender=LoggedExtendedModel.command_logs.through)
