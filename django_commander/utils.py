@@ -28,11 +28,9 @@ def run_command_task(command_name, params):
 def log_command(handle):
     def wrapper(self, *args, **options):
         self.command = Command.objects.create_or_update(
-            {"name": self.name, "parameters": str(self.parameters)}
+            {"name": self.name, "parameters": self.parameters}
         )
-        self.log = CommandLog.objects.create(
-            command=self.command, options=str(self.options)
-        )
+        self.log = CommandLog.objects.create(command=self.command, options=self.options)
         self.log_id = int(self.log.pk)
         try:
             result = handle(self, *args, **options)
@@ -102,10 +100,12 @@ def cache_results(func):
 
 
 def command_multiprocess_wrapper(command_name, parameters, options, *args):
+
     params = {}
     params.update(parameters)
     params.update(options)
-    reset_django_connection()
+    if not params.get("test", False):
+        reset_django_connection()
     from django_commander.commands import commands
 
     return commands[command_name](**params).parse_and_save(*args)
@@ -116,7 +116,7 @@ def test_commands():
     from django_commander.commands import commands
 
     for command_name in list(commands.keys()):
-        params = {"test": True}
+        params = {}
         if hasattr(commands[command_name], "test_options") or hasattr(
             commands[command_name], "test_parameters"
         ):
@@ -124,6 +124,7 @@ def test_commands():
                 params.update(commands[command_name].test_options)
             if hasattr(commands[command_name], "test_parameters"):
                 params.update(commands[command_name].test_parameters)
+        params["test"] = True
         commands[command_name](**params).run()
 
 
