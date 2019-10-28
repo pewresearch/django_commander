@@ -11,6 +11,8 @@ class Command(BasicCommand):
 
     parameter_names = ["parent_name"]
     dependencies = []
+    test_parameters = {"parent_name": "bob"}
+    test_options = {"child_name": "suzy"}
 
     @staticmethod
     def add_arguments(parser):
@@ -38,5 +40,4 @@ class Command(BasicCommand):
         child = Child.objects.create_or_update(
             {"name": child_name, "parent": parent}, command_log=self.log
         )
-
         return (parent, child)
