@@ -72,6 +72,17 @@ class Command(BasicExtendedModel):
 
         self.command.run()
 
+    def consolidate_logs(self):
+
+        first = self.logs.order_by("start_time")[0]
+        first_time = first.start_time
+        last = self.logs.order_by("-start_time")[0]
+        last_time = last.start_time
+        for extra in self.logs.exclude(pk=last.pk):
+            consolidated = consolidate_objects(source=extra, target=last)
+        consolidated.start_time = first_time
+        consolidated.save()
+
 
 class CommandLog(BasicExtendedModel):
 
