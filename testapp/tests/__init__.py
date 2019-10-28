@@ -5,6 +5,12 @@ import subprocess
 from django.test import TestCase as DjangoTestCase
 from django.core.management import call_command
 
+from django_commander.commands import commands, MissingDependencyException
+from django_commander.models import Command, CommandLog
+from django_commander.utils import clear_unfinished_command_logs, test_commands
+
+from testapp.models import Parent, Child
+
 
 class BaseTests(DjangoTestCase):
 
@@ -17,10 +23,6 @@ class BaseTests(DjangoTestCase):
         pass
 
     def test_command(self):
-
-        from django_commander.commands import commands, MissingDependencyException
-        from django_commander.models import Command, CommandLog
-        from testapp.models import Parent, Child
 
         with self.assertRaises(MissingDependencyException):
             commands["test_command_with_dependency"](parent_name="bob").run()
@@ -49,7 +51,8 @@ class BaseTests(DjangoTestCase):
             self.assertGreater(log.parent_related.count(), 0)
             self.assertGreater(log.child_related.count(), 0)
 
-        Parent.objects.filter(name__in=["bob", "shelly"]).delete()
+    def test_download_iterate_command(self):
+
         commands["test_download_iterate_command"]().run()
         self.assertEqual(Parent.objects.filter(name="bob").count(), 1)
         self.assertEqual(Parent.objects.filter(name="shelly").count(), 1)
@@ -65,6 +68,9 @@ class BaseTests(DjangoTestCase):
             .count(),
             1,
         )
+        commands["test_download_iterate_command"](refresh_cache=True).run()
+
+    def test_iterate_download_command(self):
 
         commands["test_iterate_download_command"]().run()
         self.assertEqual(Parent.objects.filter(name="BOB").count(), 1)
@@ -81,7 +87,82 @@ class BaseTests(DjangoTestCase):
             .count(),
             1,
         )
+        commands["test_iterate_download_command"](refresh_cache=True).run()
 
+    def test_database_models(self):
+
+        for name in ["bob", "shelly", "suzy", "jeff"]:
+            for i in range(0, 5):
+                commands["test_command"](parent_name=name).run()
+
+            log = CommandLog.objects.all()[0]
+            string = str(log)
+            log.error = "ERROR"
+            log.save()
+            log_id = log.pk
+            clear_unfinished_command_logs()
+            self.assertEqual(CommandLog.objects.filter(pk=log_id).count(), 0)
+
+            cmd = Command.objects.get(
+                name="test_command", parameters={"parent_name": name}
+            )
+            self.assertIsNotNone(cmd.command_class)
+            self.assertIsNotNone(cmd.command)
+            cmd.run()
+            cmd.consolidate_logs()
+            self.assertEqual(cmd.logs.count(), 1)
+
+    def test_test_commands(self):
+
+        test_commands()
+
+    def test_multiprocessed_download_iterate_command(self):
+
+        commands["test_multiprocessed_download_iterate_command"](
+            num_cores=1, test=True
+        ).run()
+        self.assertEqual(Parent.objects.filter(name="bob").count(), 1)
+        self.assertEqual(Parent.objects.filter(name="shelly").count(), 1)
+        self.assertEqual(
+            Parent.objects.get(name="bob")
+            .commands.filter(name="test_multiprocessed_download_iterate_command")
+            .count(),
+            1,
+        )
+        self.assertEqual(
+            Parent.objects.get(name="shelly")
+            .commands.filter(name="test_multiprocessed_download_iterate_command")
+            .count(),
+            1,
+        )
+        commands["test_multiprocessed_download_iterate_command"](
+            num_cores=1, refresh_cache=True, test=True
+        ).run()
+
+    def test_multiprocessed_iterate_download_command(self):
+        commands["test_multiprocessed_iterate_download_command"](
+            num_cores=1, test=True
+        ).run()
+        self.assertEqual(Parent.objects.filter(name="BOB").count(), 1)
+        self.assertEqual(Parent.objects.filter(name="SHELLY").count(), 1)
+        self.assertEqual(
+            Parent.objects.get(name="BOB")
+            .commands.filter(name="test_multiprocessed_iterate_download_command")
+            .count(),
+            1,
+        )
+        self.assertEqual(
+            Parent.objects.get(name="SHELLY")
+            .commands.filter(name="test_multiprocessed_iterate_download_command")
+            .count(),
+            1,
+        )
+        commands["test_multiprocessed_iterate_download_command"](
+            num_cores=1, refresh_cache=True, test=True
+        ).run()
+
+    def test_multiprocessing(self):
+        pass
         # # Haven't figured out how to test multiprocessing; the unit testing module keeps the db in a single transaction
         # # Also, when you trigger manage.py externally, it's going to try to use the main database, not the test one
         # process = subprocess.Popen(

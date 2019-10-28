@@ -1,15 +1,19 @@
 from __future__ import print_function, absolute_import
 
-from django_commander.commands import DownloadIterateCommand, cache_results
+from django_commander.commands import (
+    MultiprocessedDownloadIterateCommand,
+    cache_results,
+)
+from django_commander.utils import log_command
 from testapp.models import Parent
 
 
-class Command(DownloadIterateCommand):
+class Command(MultiprocessedDownloadIterateCommand):
 
     parameter_names = []
     dependencies = []
     test_parameters = {}
-    test_options = {}
+    test_options = {"num_cores": 1}
 
     @staticmethod
     def add_arguments(parser):
@@ -26,8 +30,9 @@ class Command(DownloadIterateCommand):
         for name in names:
             yield [name]
 
+    @log_command
     def parse_and_save(self, name):
         Parent.objects.create_or_update({"name": name}, command_log=self.log)
 
-    def cleanup(self):
+    def cleanup(self, results):
         pass
