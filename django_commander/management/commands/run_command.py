@@ -16,6 +16,11 @@ from django_commander.utils import run_command_task
 
 class Command(BaseCommand):
 
+    """
+    Thanks to the Django Subcommander repository (https://github.com/erikrose/django-subcommander) for
+    inspiration.
+    """
+
     subcommands = list(commands.keys())
 
     def __init__(self, *args, **kwargs):
