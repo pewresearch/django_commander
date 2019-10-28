@@ -321,6 +321,7 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
             MultiprocessedIterateDownloadCommand, cls
         ).create_or_modify_parser(parser=parser)
         parser.add_argument("--refresh_cache", action="store_true", default=False)
+        parser.add_argument("--num_cores", default=1, type=int)
 
         return parser
 
@@ -371,9 +372,9 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
                     )
         pool.close()
         pool.join()
-        self.process_results(results)
+        self.cleanup(results)
 
-    def cleanup(self):
+    def cleanup(self, results):
 
         raise NotImplementedError
 
@@ -390,6 +391,7 @@ class MultiprocessedDownloadIterateCommand(BasicCommand):
             MultiprocessedDownloadIterateCommand, cls
         ).create_or_modify_parser(parser=parser)
         parser.add_argument("--refresh_cache", action="store_true", default=False)
+        parser.add_argument("--num_cores", default=1, type=int)
 
         return parser
 
@@ -422,9 +424,9 @@ class MultiprocessedDownloadIterateCommand(BasicCommand):
                 )
         pool.close()
         pool.join()
-        self.process_results(results)
+        self.cleanup(results)
 
-    def cleanup(self):
+    def cleanup(self, results):
 
         raise NotImplementedError
 
