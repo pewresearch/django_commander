@@ -3,101 +3,24 @@ from __future__ import print_function
 from builtins import input
 from builtins import str
 from builtins import object
-import pkgutil, importlib, os
-import datetime, traceback
+
+import os
 
 from multiprocessing import Pool
 from argparse import ArgumentParser
 
-from django.apps import apps
 from django.conf import settings
 
-from django_pewtils import (
-    get_model,
-    reset_django_connection,
-    CacheHandler,
-    get_app_settings_folders,
-)
+from django_pewtils import CacheHandler, get_app_settings_folders
 from pewtils import is_not_null, extract_attributes_from_folder_modules, classproperty
 
 from django_commander.models import Command, CommandLog
-from django_commander.utils import MissingDependencyException
-
-
-def log_command(handle):
-    def wrapper(self, *args, **options):
-        self.command = Command.objects.create_or_update(
-            {"name": self.name, "parameters": str(self.parameters)}
-        )
-        self.log = CommandLog.objects.create(
-            command=self.command, options=str(self.options)
-        )
-        self.log_id = int(self.log.pk)
-        try:
-            result = handle(self, *args, **options)
-            if self.log:
-                self.log.end_time = datetime.datetime.now()
-                try:
-                    self.log.save()
-                except:
-                    # sometimes for really long-standing processes, there's a timeout SSL error
-                    # so, we'll just fetch the log object again before saving and closing out
-                    self.log = CommandLog.objects.get(pk=self.log_id)
-                    self.log.end_time = datetime.datetime.now()
-                    self.log.save()
-            return result
-        except Exception as e:
-            tb = traceback.format_exc()
-            print(e)
-            print(tb)
-            if self.log:
-                try:
-                    self.log.error = {"traceback": tb, "exception": e}
-                    self.log.save()
-                except:
-                    self.log.error = {"traceback": str(tb), "exception": str(e)}
-                    self.log.save()
-            return None
-
-    return wrapper
-
-
-def cache_results(func):
-    def wrapper(self, *args, **options):
-
-        """
-        Gets wrapped on the download function
-
-        Uses the cache folder in the logos-data S3 bucket if ENV is set to prod or prod-read-only; otherwise it
-        uses a local cache (for local/dev/test environments).  If set to prod-read-only, it doesn't save anything,
-        it just loads from the prod cache.
-        """
-
-        hashstr = (
-            str(self.__class__.name)
-            + str(func.__name__)
-            + str(args)
-            + str(self.parameters)
-        )
-        if self.options["refresh_data"] or options.get("refresh_data"):
-            data = None
-        else:
-            data = self.cache.read(hashstr)
-        if (
-            not is_not_null(data)
-            or self.options["refresh_data"]
-            or options.get("refresh_data", False)
-        ):
-            print(
-                "Refreshing data from source for command '%s.%s'"
-                % (str(self.__class__.name), str(func.__name__))
-            )
-            data = func(self, *args)
-            self.cache.write(hashstr, data)
-
-        return data
-
-    return wrapper
+from django_commander.utils import (
+    MissingDependencyException,
+    cache_results,
+    log_command,
+    command_multiprocess_wrapper,
+)
 
 
 class BasicCommand(object):
@@ -318,9 +241,6 @@ class DownloadIterateCommand(BasicCommand):
                 self.parse_and_save(*iargs)
         self.cleanup()
 
-    def check_rows(self):
-        raise NotImplementedError
-
 
 class IterateDownloadCommand(BasicCommand):
     def __init__(self, **options):
@@ -419,13 +339,6 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
         pool.join()
         self.process_results(results)
 
-    def process_results(self, results):
-        """
-        Processing that you want to happen at the end of the run.
-        """
-
-        raise NotImplementedError
-
 
 class MultiprocessedDownloadIterateCommand(BasicCommand):
     def __init__(self, **options):
@@ -462,23 +375,6 @@ class MultiprocessedDownloadIterateCommand(BasicCommand):
         pool.close()
         pool.join()
         self.process_results(results)
-
-    def process_results(self, results):
-        """
-        Processing that you want to happen at the end of the run.
-        """
-
-        raise NotImplementedError
-
-
-def command_multiprocess_wrapper(command_name, parameters, options, *args):
-    params = {}
-    params.update(parameters)
-    params.update(options)
-    reset_django_connection()
-    from django_commander.commands import commands
-
-    return commands[command_name](**params).parse_and_save(*args)
 
 
 commands = {}
