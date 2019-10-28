@@ -83,17 +83,17 @@ def cache_results(func):
             + str(args)
             + str(self.parameters)
         )
-        if self.options["refresh_data"] or options.get("refresh_data"):
+        if self.options["refresh_cache"] or options.get("refresh_cache"):
             data = None
         else:
             data = self.cache.read(hashstr)
         if (
             not is_not_null(data)
-            or self.options["refresh_data"]
-            or options.get("refresh_data", False)
+            or self.options["refresh_cache"]
+            or options.get("refresh_cache", False)
         ):
             print(
-                "Refreshing data from source for command '%s.%s'"
+                "Refreshing cached data from source for command '%s.%s'"
                 % (str(self.__class__.name), str(func.__name__))
             )
             data = func(self, *args)
