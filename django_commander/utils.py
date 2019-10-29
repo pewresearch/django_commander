@@ -30,7 +30,20 @@ def log_command(handle):
         self.command = Command.objects.create_or_update(
             {"name": self.name, "parameters": self.parameters}
         )
-        self.log = CommandLog.objects.create(command=self.command, options=self.options)
+        option_subset = {}
+        for k, v in self.options.items():
+            if k not in [
+                "no_color",
+                "settings",
+                "traceback",
+                "verbosity",
+                "pythonpath",
+                "force_color",
+            ]:
+                option_subset[k] = v
+        self.log = CommandLog.objects.create(
+            command=self.command, options=option_subset
+        )
         self.log_id = int(self.log.pk)
         try:
             result = handle(self, *args, **options)
