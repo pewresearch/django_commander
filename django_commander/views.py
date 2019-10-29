@@ -8,7 +8,7 @@ from django.conf import settings
 from django_commander.models import Command, CommandLog
 
 
-@login_required
+# @login_required
 def home(request):
 
     commands = []
@@ -19,11 +19,11 @@ def home(request):
     return render(request, "django_commander/index.html", {"commands": commands})
 
 
-@login_required
+# @login_required
 def view_command(request, command_id):
 
     command = Command.objects.get(pk=command_id)
-    logs = command.logs.order_by("-start_time")
+    logs = command.logs.order_by("-start_time")[:10]
 
     return render(
         request, "django_commander/command.html", {"command": command, "logs": logs}
