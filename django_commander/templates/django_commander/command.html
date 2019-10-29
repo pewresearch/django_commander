@@ -12,15 +12,31 @@
         <div class="col-md-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Command Logs: {{ command.name }}, {{ command.parameters }}</h3>
+                    <h3 class="panel-title">
+                        Ten most recent runs for: {{ command.name }} (
+                        {% for k, v in command.command.parameters.items %}
+                            {{ k }}: {{ v }},
+                        {% endfor %})
+                    </h3>
                 </div>
                 <table class="panel-body table table-condensed">
-                    <tr><th>Options</th><th>Start</th><th>Finish</th><th>Error</th></tr>
+                    <tr><th>Options</th><th>Start</th><th>End</th><th>Objects</th><th>Error</th></tr>
                     {% for log in logs %}
                         <tr>
-                            <td>{{ log.options }}</td>
+                            <td>
+                                {% for k, v in log.options.items %}
+                                    {{ k }}: {{ v }}<br>
+                                {% endfor %}
+                            </td>
                             <td>{{ log.start_time }}</td>
                             <td>{{ log.end_time }}</td>
+                            <td>
+                                {% for model, objs in log.related_objects.items %}
+                                    {% if model != 'command' %}
+                                        {{ model }}: {{ objs.count }}<br>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
                             <td>{{ log.error }}</td>
                         </tr>
                     {% endfor %}

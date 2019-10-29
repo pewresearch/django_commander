@@ -172,5 +172,45 @@ class BaseTests(DjangoTestCase):
         # )
         # stdout, stderr = process.communicate()
 
+    def test_views(self):
+
+        from django.urls import reverse
+
+        commands["test_command"](parent_name="bob").run()
+        command_id = Command.objects.all()[0].pk
+
+        for view, method, args, data, tests in [
+            (
+                "django_commander:home",
+                "get",
+                [],
+                {},
+                [
+                    (lambda x: len(x["commands"]), 1),
+                    (lambda x: x["commands"][0]["command"].name, "test_command"),
+                    (lambda x: x["commands"][0]["latest_log"].error, None),
+                ],
+            ),
+            (
+                "django_commander:view_command",
+                "get",
+                [command_id],
+                {},
+                [
+                    (lambda x: x["command"].name, "test_command"),
+                    (lambda x: len(x["logs"]), 1),
+                ],
+            ),
+        ]:
+            response = getattr(self.client, method)(reverse(view, args=args), data=data)
+            self.assertEqual(response.status_code, 200)
+            for func, value in tests:
+                self.assertEqual(func(response.context), value)
+
     def tearDown(self):
-        pass
+        from django.conf import settings
+        import shutil, os
+
+        cache_path = os.path.join(settings.BASE_DIR, settings.LOCAL_CACHE_ROOT)
+        if os.path.exists(cache_path):
+            shutil.rmtree(cache_path)
