@@ -3,7 +3,7 @@ boto>=2.46.1
 boto3>=1.4.4
 celery>=4.0.2
 chardet>=2.3.0
-Cython>=0.25.2
+cython>=0.25.2
 django<2.0; python_version < '3.0'
 django>=2.2; python_version >= '3.0'
 django-picklefield>=2.0
