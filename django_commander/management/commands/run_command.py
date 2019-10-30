@@ -17,8 +17,9 @@ from django_commander.utils import run_command_task
 class Command(BaseCommand):
 
     """
-    Thanks to the Django Subcommander repository (https://github.com/erikrose/django-subcommander) for
-    inspiration.
+    A wrapper around Django's `BaseCommand` that uses the first parameter as a namespace to look up a
+    `django_commander` command and run it. Thanks to the Django Subcommander repository
+    (https://github.com/erikrose/django-subcommander) for inspiration.
     """
 
     subcommands = list(commands.keys())

@@ -24,30 +24,19 @@ from django_commander.utils import (
 
 
 class BasicCommand(object):
+
     """
-    All Basic commands require an init function that have the following
-         self.name
-         option_default key, value tuples
-         parameter defaults key, value tuples
-         self.options   ( Passed in variables with names in option defaults override the defaults )
-            options have no bearing on what gets downloaded rather how its gets processed
-         self.parameters ( Passed in variables with names in option defaults override the defaults )
-            parameters are for pulling and processing
-
-         self.dependencies : list of  tuple of the name, paraemeters dictionary
-         self.command = None
-
-    required methods --  most be defined on every subclass
-
-    download
-    iterate
-    parse_and_save
-    cleanup ( can be blank )
-
+    The base `django_commander` command class.
     """
 
     @classproperty
     def name(cls):
+
+        """
+        Detects the name of the current command by it's file's name and location
+        :return: Name of the command
+        """
+
         has_root_folder_prefix = "_".join(cls.__module__.split(".")[-2:])
         return "_".join(has_root_folder_prefix.split("_")[1:])
 
@@ -64,6 +53,12 @@ class BasicCommand(object):
         return parser
 
     def __init__(self, **options):
+
+        """
+        Initializes the command and parses the parameters and options, checks for dependencies, and initializes
+        a file cache.
+        :param options:
+        """
 
         dispatched = options.get("dispatched", False)
         if "dispatched" in list(options.keys()):
@@ -101,23 +96,27 @@ class BasicCommand(object):
                 try:
                     parsed = parser.parse_known_args()[0]
                     print(
-                        "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                        "Unable to parse arguments, using defaults and whatever was passed in manually to the "
+                        "function, if applicable"
                     )
                 except SystemExit:
                     print(
-                        "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                        "Unable to parse arguments, using defaults and whatever was passed in manually to the "
+                        "function, if applicable"
                     )
                     skip = True
                 except Exception as e:
                     print("UNKNOWN ERROR: {}".format(e))
                     print(
-                        "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                        "Unable to parse arguments, using defaults and whatever was passed in manually to the "
+                        "function, if applicable"
                     )
                     skip = True
             except Exception as e:
                 print("UNKNOWN ERROR: {}".format(e))
                 print(
-                    "Unable to parse arguments, using defaults and whatever was passed in manually to the function, if applicable"
+                    "Unable to parse arguments, using defaults and whatever was passed in manually to the "
+                    "function, if applicable"
                 )
                 skip = True
             if not skip:
@@ -148,6 +147,15 @@ class BasicCommand(object):
         )
 
     def check_dependencies(self, dispatched=False):
+
+        """
+        If the class has a `dependencies` attribute, then it loops over it and checks the database for each command
+        listed as a dependency (along with specific parameters) to make sure that the required commands have been
+        executed successfully. If you're running the command from the shell (instead of programmatically), it'll
+        pause and explicitly ask for permission to continue if not all dependencies have been run.
+
+        :param dispatched: Whether the current running command was dispatched via the command line or not
+        """
 
         if hasattr(self, "dependencies"):
             missing = []
@@ -194,11 +202,35 @@ class BasicCommand(object):
 
     @log_command
     def run(self):
+        """
+        Placeholder for the command's actual code
+        """
 
         raise NotImplementedError
 
 
 class DownloadIterateCommand(BasicCommand):
+
+    """
+    This command class is designed to first load/download some sort of file, iterate over it, and then do something with
+    each value. Accordingly, it requires four functions to be defined:
+
+    - `download`: Loads something and returns it. This function can be wrapped with the `@cache_results` decorator,
+    which can save the returned result locally or in Amazon S3. When this is enabled, you can pass the option
+    `--refresh_cache` to the command (this option exists on all commands by default) and it will refresh, otherwise
+    the cached version will be used. This can be useful if you're downloading large files.
+    - `iterate`: A function whose arguments should correspond to the value(s) returned by the `download` command. This
+    function is expected to operate as an iterable, yielding objects to be processed.
+    - `parse_and_save`: A function whose arguments should correspond to the value(s) being yielded by the `iterate`
+    command. This function should process each object, save things to the database, etc. No return value is expected.
+    - `cleanup`: A function that gets run after everything has finished. It's required, but you can just put `pass`
+    there if there's no additional work to be done.
+
+    An example of when this type of command might be useful would be for a command that downloads a roster of
+    politicians, iterates over each row in the roster, and then looks up and updates information about the politician
+    in each row.
+    """
+
     def __init__(self, **options):
 
         super(DownloadIterateCommand, self).__init__(**options)
@@ -222,7 +254,8 @@ class DownloadIterateCommand(BasicCommand):
     def iterate(self, *args, **options):
         """
         :param args: Passed from the download function
-        :return: Iterate must yield lists of parameters, each of which will be passed as positional arguments to parse_and_save
+        :return: Iterate must yield lists of parameters, each of which will be passed as positional arguments to
+        parse_and_save
         """
         raise NotImplementedError
 
@@ -253,6 +286,28 @@ class DownloadIterateCommand(BasicCommand):
 
 
 class IterateDownloadCommand(BasicCommand):
+
+    """
+    This type of command operates in the opposite manner as `DownloadIterateCommand`. It expects to loop over something
+    (like a list of IDs) and download/load something for each of the yielded values. The results, in turn, are each
+    processed by the `parse_and_save` function. For instances of this class, the `@cache_results` decorator should also
+    be used on the `download` function, with the only difference being that this class will result in multiple cached
+    files, one for each of the values passed to `download`. Once again, `--refresh_cache` will ignore any cached files.
+    An example of when this type of command might be useful would be a command that loops over politician objects
+    that are stored in a database, downloads the Wikipedia page for each politician, and then saves each pages in the
+    database. The required functions are:
+
+    - `iterate`: A function that iterates over a list of some sort and yields values.
+    - `download`: Arguments correspond to the values yielded by `iterate`; this function should fetch some data and
+    return it. Can be wrapped with the `@cache_results` decorator, which can save the returned result locally or in
+    Amazon S3. When this is enabled, you can pass the option `--refresh_cache` to the command (this option exists on
+    all commands by default) and it will refresh, otherwise the cached version will be used. This can be useful if
+    you're downloading large files.
+    - `parse_and_save`: A function whose arguments should correspond first to the values(s) yielded by `iterate` and
+    then to the value(s) returned by `download`. No return value is expected.
+    - `cleanup`: A function to run after everything else has finished
+    """
+
     def __init__(self, **options):
 
         super(IterateDownloadCommand, self).__init__(**options)
@@ -269,26 +324,32 @@ class IterateDownloadCommand(BasicCommand):
 
     def iterate(self, *args, **options):
         """
-        :return:
+        :return: Must yield an iterable that produces lists of arguments, which will be passed to `download`
         """
         raise NotImplementedError
 
     def download(self, *args, **options):
         """
-        :param args:
-        :return:
+        :param args: Passed from the `iterate` function
+        :return: Must return a single list of values that will be passed as additional arguments to `parse_and_save`
         """
         raise NotImplementedError
 
     def parse_and_save(self, *args, **options):
         """
-        :param args:
-        :return:
+        :param args: Consist of the values yielded by `iterate`, followed by the values returned by `download`
+        :return: None (commits to the database)
         """
         raise NotImplementedError
 
     @log_command
     def run(self):
+
+        """
+        Checks dependencies, calls the iterate function.  Passes the values that are returned to download, which then
+        yields one or more sets of values to parse and save, which commits to the database.  Then calls cleanup
+        :return: None
+        """
 
         self.check_dependencies()
         for iargs in self.iterate():
@@ -310,6 +371,19 @@ class IterateDownloadCommand(BasicCommand):
 
 
 class MultiprocessedIterateDownloadCommand(BasicCommand):
+
+    """
+    A multiprocessed version of the `IterateDownloadCommand`. Functions the same way, but accepts an additional
+    `num_cores` parameter (corresponding to the number of processors to use during multiprocessing) and it will apply
+    the `parse_and_save` function in parallel to improve efficiency. Once all of the values have been processed by
+    `parse_and_save`, the `cleanup` function will be run.
+
+    * For the multiprocessed version of this command, `parse_and_save` can optionally return values, and `cleanup`
+    will be passed a list of all of the returned values at the end of the command. Accordingly, `cleanup` must accept an
+    argument.
+    * Additionally, the `@log_command` must be added to `parse_and_save` to enable logging on these commands.
+    """
+
     def __init__(self, **options):
 
         super(MultiprocessedIterateDownloadCommand, self).__init__(**options)
@@ -380,6 +454,19 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
 
 
 class MultiprocessedDownloadIterateCommand(BasicCommand):
+
+    """
+    A multiprocessed version of the `DownloadIterateCommand`. Functions the same way, but accepts an additional
+    `num_cores` parameter (corresponding to the number of processors to use during multiprocessing) and it will apply
+    the `parse_and_save` function in parallel to improve efficiency. Once all of the values have been processed by
+    `parse_and_save`, the `cleanup` function will be run.
+
+    * For the multiprocessed version of this command, `parse_and_save` can optionally return values, and `cleanup`
+    will be passed a list of all of the returned values at the end of the command. Accordingly, `cleanup` must accept an
+    argument.
+    * Additionally, the `@log_command` must be added to `parse_and_save` to enable logging on these commands.
+    """
+
     def __init__(self, **options):
 
         super(MultiprocessedDownloadIterateCommand, self).__init__(**options)
