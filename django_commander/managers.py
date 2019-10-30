@@ -5,6 +5,13 @@ from django_pewtils import get_model
 
 
 class LoggedExtendedManager(BasicExtendedManager):
+
+    """
+    Extension of the `django_pewtils` `BasicExtendedManager`, which allows you to pass an additional `command_log`
+    argument to the `create_or_update` function, which you can use to associated objects that are modified by a
+    command with the command and the log of its current instance.
+    """
+
     def create_or_update(
         self,
         unique_data,
