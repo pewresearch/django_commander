@@ -143,7 +143,9 @@ def update_command_m2m(sender, **kwargs):
 
     if kwargs["action"] == "post_add" and "instance" in kwargs and kwargs["instance"]:
         obj = kwargs["instance"]
-        if obj._meta.model != CommandLog:
+        if obj._meta.model != CommandLog and (
+            LoggedExtendedModel in obj._meta.model.__bases__
+        ):
             commands = Command.objects.filter(
                 pk__in=obj.command_logs.values_list("command_id", flat=True)
             )

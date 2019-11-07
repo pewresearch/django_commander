@@ -207,6 +207,14 @@ class BaseTests(DjangoTestCase):
             for func, value in tests:
                 self.assertEqual(func(response.context), value)
 
+    def test_m2m_changed(self):
+
+        parent = Parent.objects.create(name="bob")
+        command = Command.objects.create(name="test_command")
+        log = CommandLog.objects.create(command=command)
+        parent.command_logs.add(log)
+        self.assertIn(command, parent.commands.all())
+
     def tearDown(self):
         from django.conf import settings
         import shutil, os
