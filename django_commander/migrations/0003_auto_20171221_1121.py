@@ -7,14 +7,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('django_commander', '0002_commandlog_celery_task_id'),
-    ]
+    dependencies = [("django_commander", "0002_commandlog_celery_task_id")]
 
     operations = [
         migrations.AlterField(
-            model_name='commandlog',
-            name='celery_task_id',
+            model_name="commandlog",
+            name="celery_task_id",
             field=models.TextField(null=True),
-        ),
+        )
     ]
