@@ -34,7 +34,9 @@ class Migration(migrations.Migration):
             model_name="command",
             name="parameters",
             field=django.contrib.postgres.fields.jsonb.JSONField(
-                default=dict, help_text="The parameters used to initialize the command", encoder=DjangoJSONEncoder
+                default=dict,
+                help_text="The parameters used to initialize the command",
+                encoder=DjangoJSONEncoder,
             ),
         ),
         migrations.RunPython(convert_parameters_to_json),
@@ -46,7 +48,9 @@ class Migration(migrations.Migration):
             model_name="commandlog",
             name="options",
             field=django.contrib.postgres.fields.jsonb.JSONField(
-                default=dict, help_text="The options passed to the command", encoder=DjangoJSONEncoder
+                default=dict,
+                help_text="The options passed to the command",
+                encoder=DjangoJSONEncoder,
             ),
         ),
         migrations.RunPython(convert_options_to_json),
