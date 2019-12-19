@@ -3,6 +3,11 @@ import traceback, datetime
 from celery import shared_task
 from tqdm import tqdm
 
+try:
+    from inspect import signature
+except ImportError:
+    from funcsigs import signature
+
 from pewtils import is_not_null
 from django_pewtils import reset_django_connection
 
@@ -148,3 +153,37 @@ def clear_unfinished_command_logs():
         command.logs.filter(end_time__isnull=True).delete()
         if command.logs.count() == 0:
             command.delete()
+
+
+def compile_parser_from_function(parser, func):
+
+    """
+    Iterates over all of the arguments and keyword arguments defined in a given function and adds them to an argparse
+    parser. Assumes that required (non-keyword) arguments are strings, and that boolean keyword arguments are False
+    by default. Detects the type of other keyword arguments based on their specified defaults.
+
+    # TODO: kwargs with default=None don't know what type to case; only way to fix this is with Python 3 type annotations
+
+    :param parser:
+    :param func:
+    :return:
+    """
+
+    for param in signature(func).parameters.values():
+
+        if param.default == param.empty:
+            parser.add_argument(param.name, type=str)
+        elif isinstance(param.default, bool):
+            parser.add_argument(
+                "--{}".format(param.name), action="store_true", default=param.default
+            )
+        elif isinstance(param.default, None):
+            parser.add_argument("--{}".format(param.name), type=str, default=None)
+        else:
+            parser.add_argument(
+                "--{}".format(param.name),
+                type=type(param.default),
+                default=param.default,
+            )
+
+    return parser
