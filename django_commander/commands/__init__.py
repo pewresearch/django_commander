@@ -5,9 +5,11 @@ from builtins import str
 from builtins import object
 
 import os
+import re
 
 from multiprocessing import Pool
 from argparse import ArgumentParser
+from difflib import SequenceMatcher
 
 from django.conf import settings
 
@@ -37,8 +39,20 @@ class BasicCommand(object):
         :return: Name of the command
         """
 
-        has_root_folder_prefix = "_".join(cls.__module__.split(".")[-2:])
-        return "_".join(has_root_folder_prefix.split("_")[1:])
+        module_name = "_".join(cls.__module__.split("."))
+        for dir in sorted(settings.DJANGO_COMMANDER_COMMAND_FOLDERS, key=lambda x: len(x), reverse=True):
+            dir = dir.replace("/", "_")
+            d = SequenceMatcher(None, dir, module_name)
+            i, j, k = max(d.get_matching_blocks(), key=lambda x: x[2])
+            match = dir[i:i+k]
+            if module_name.startswith(match) and dir.endswith(match):
+                module_name = re.sub(match, "", module_name).strip("_")
+                break
+        return module_name
+
+        # has_root_folder_prefix = "_".join(cls.__module__.split(".")[2:])
+        # return has_root_folder_prefix
+        # # return "_".join(has_root_folder_prefix.split("_")[1:])
 
     @classmethod
     def create_or_modify_parser(cls, parser=None):
