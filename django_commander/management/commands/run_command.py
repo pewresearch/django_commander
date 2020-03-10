@@ -36,7 +36,6 @@ class Command(BaseCommand):
         if self.subcommand_name in commands.keys():
             parser = commands[self.subcommand_name].create_or_modify_parser(parser)
         parser.add_argument("--multiprocess", default=False, action="store_true")
-        parser.add_argument("--num_cores", default=1, type=int)
 
         return parser
 
