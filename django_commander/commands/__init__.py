@@ -40,11 +40,15 @@ class BasicCommand(object):
         """
 
         module_name = "_".join(cls.__module__.split("."))
-        for dir in sorted(settings.DJANGO_COMMANDER_COMMAND_FOLDERS, key=lambda x: len(x), reverse=True):
+        for dir in sorted(
+            settings.DJANGO_COMMANDER_COMMAND_FOLDERS,
+            key=lambda x: len(x),
+            reverse=True,
+        ):
             dir = dir.replace("/", "_")
             d = SequenceMatcher(None, dir, module_name)
             i, j, k = max(d.get_matching_blocks(), key=lambda x: x[2])
-            match = dir[i:i+k]
+            match = dir[i : i + k]
             if module_name.startswith(match) and dir.endswith(match):
                 module_name = re.sub(match, "", module_name).strip("_")
                 break
