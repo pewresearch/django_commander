@@ -219,6 +219,6 @@ class BaseTests(DjangoTestCase):
         from django.conf import settings
         import shutil, os
 
-        cache_path = os.path.join(settings.BASE_DIR, settings.LOCAL_CACHE_ROOT)
+        cache_path = os.path.join(settings.BASE_DIR, settings.DJANGO_COMMANDER_LOCAL_CACHE_ROOT)
         if os.path.exists(cache_path):
             shutil.rmtree(cache_path)
