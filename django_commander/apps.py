@@ -24,13 +24,10 @@ class DjangoCommanderConfig(AppConfig):
             if not hasattr(settings, setting):
                 setattr(settings, setting, default)
 
-        LOCAL_CACHE_PATH = os.path.join(settings.LOCAL_CACHE_ROOT, "django_queries")
-        setattr(settings, "LOCAL_CACHE_PATH", LOCAL_CACHE_PATH)
-        if settings.DJANGO_COMMANDER_USE_S3:
-            S3_CACHE_PATH = os.path.join(settings.S3_CACHE_ROOT, "django_queries")
-        else:
-            S3_CACHE_PATH = settings.LOCAL_CACHE_PATH
-        setattr(settings, "S3_CACHE_PATH", S3_CACHE_PATH)
+        LOCAL_CACHE_PATH = os.path.join(settings.LOCAL_CACHE_ROOT, "django_commander")
+        setattr(settings, "DJANGO_COMMANDER_LOCAL_CACHE_PATH", LOCAL_CACHE_PATH)
+        S3_CACHE_PATH = os.path.join(settings.S3_CACHE_ROOT, "django_commander")
+        setattr(settings, "DJANGO_COMMANDER_S3_CACHE_PATH", S3_CACHE_PATH)
 
         templates = settings.TEMPLATES
         new_templates = []
