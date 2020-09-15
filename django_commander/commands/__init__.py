@@ -377,7 +377,7 @@ class IterateDownloadCommand(BasicCommand):
                     self.parse_and_save(*(dargs + iargs))
                 except TypeError:
                     print("Outdated cache, refreshing data")
-                    dargs = self.download(*iargs, **{"refresh_data": True})
+                    dargs = self.download(*iargs, **{"refresh_cache": True})
                     if any([is_not_null(a) for a in dargs]):
                         self.parse_and_save(*(dargs + iargs))
 
