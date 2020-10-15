@@ -43,5 +43,5 @@ unicode
 unidecode>=0.4.20
 xlsxwriter>=1.1.8
 xlrd>=1.2.0
-git+ssh://labsdeploy/pewresearch/pewtils#egg=pewtils
+git+ssh://labsdeploy/pewresearch/pewtils_dev#egg=pewtils
 git+ssh://labsdeploy/pewresearch/django_pewtils#egg=django_pewtils
