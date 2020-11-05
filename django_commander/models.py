@@ -1,7 +1,6 @@
 from builtins import str
 from builtins import object
 from django.db import models
-from django.contrib.postgres.fields import JSONField
 from django.core.serializers.json import DjangoJSONEncoder
 from picklefield.fields import PickledObjectField
 
@@ -46,7 +45,7 @@ class Command(BasicExtendedModel):
     name = models.CharField(
         max_length=400, db_index=True, help_text="The name of a command"
     )
-    parameters = JSONField(
+    parameters = models.JSONField(
         default=dict,
         help_text="The parameters used to initialize the command",
         encoder=DjangoJSONEncoder,
@@ -106,7 +105,7 @@ class CommandLog(BasicExtendedModel):
     end_time = models.DateTimeField(
         null=True, help_text="The time at which the command finished (if applicable)"
     )
-    options = JSONField(
+    options = models.JSONField(
         default=dict,
         help_text="The options passed to the command",
         encoder=DjangoJSONEncoder,

@@ -152,7 +152,9 @@ class BasicCommand(object):
         self.check_dependencies(dispatched=dispatched)
 
         if self.options["test"]:
-            path = os.path.join(settings.DJANGO_COMMANDER_S3_CACHE_PATH, self.name, "test")
+            path = os.path.join(
+                settings.DJANGO_COMMANDER_S3_CACHE_PATH, self.name, "test"
+            )
         else:
             path = os.path.join(settings.DJANGO_COMMANDER_S3_CACHE_PATH, self.name)
         self.cache = CacheHandler(

@@ -5,7 +5,7 @@ celery>=4.0.2
 chardet>=2.3.0
 cython>=0.25.2
 django<2.0; python_version < '3.0'
-django>=2.2; python_version >= '3.0'
+django>=3.1; python_version >= '3.0'
 django-picklefield>=2.0
 django-rq>=0.9.5
 flower>=0.9.2
@@ -44,5 +44,5 @@ unicode
 unidecode>=0.4.20
 xlsxwriter>=1.1.8
 xlrd>=1.2.0
-git+ssh://labsdeploy/pewresearch/pewtils#egg=pewtils
+git+ssh://labsdeploy/pewresearch/pewtils_dev#egg=pewtils
 git+ssh://labsdeploy/pewresearch/django_pewtils#egg=django_pewtils
