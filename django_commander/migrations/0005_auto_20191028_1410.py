@@ -23,7 +23,12 @@ def convert_options_to_json(apps, schema_editor):
             opts = ast.literal_eval(log.options_old)
 
         except:
-            opts = json.loads(log.options_old)
+            try:
+                opts = json.loads(log.options_old)
+
+            except:
+                print(log.options_old)
+                opts = None
 
         log.options = opts
         log.save()
