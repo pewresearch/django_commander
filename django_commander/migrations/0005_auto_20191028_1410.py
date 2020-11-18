@@ -28,10 +28,16 @@ def convert_options_to_json(apps, schema_editor):
 
             except:
                 print(log.options_old)
-                opts = None
+                opts = {}
 
         log.options = opts
-        log.save()
+
+        try:
+            log.save()
+
+        except:
+            import pdb
+            pdb.set_trace()
 
 
 class Migration(migrations.Migration):
