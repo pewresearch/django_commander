@@ -5,7 +5,7 @@ on:
     paths:
       - .github/workflows/build-main.yaml
       - Makefile
-      - django-commander/**
+      - django_commander/**
       - requirements.txt
       - setup.py
       - tests/**
