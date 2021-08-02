@@ -7,7 +7,7 @@ cython>=0.25.2
 django-picklefield>=2.0
 django-rq>=0.9.5
 django>=3.1
-django_pewtils @ git+https://github.com/pewresearch/django_pewtils
+django_pewtils
 future
 fuzzywuzzy>=0.15.0
 gensim>=3.8.1
@@ -19,7 +19,7 @@ nilsimsa>=0.3.8
 nltk>=3.2.2
 numpy>=1.16.0
 pandas>=0.25.0
-pewtils @ git+https://github.com/pewresearch/pewtils
+pewtils
 polyglot
 psycopg2
 python-dateutil>=2.6.0
