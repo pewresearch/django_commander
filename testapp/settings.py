@@ -4,7 +4,6 @@ import os
 SITE_NAME = "testapp"
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-LOCAL_CACHE_ROOT = "cache"
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -85,4 +84,5 @@ DJANGO_COMMANDER_COMMAND_FOLDERS = [
     os.path.abspath(os.path.join(BASE_DIR, "testapp", "commands")).replace("\\", "/")
 ]
 DJANGO_COMMANDER_USE_S3 = False
+DJANGO_COMMANDER_CACHE_PATH = "cache"
 DEBUG = True
