@@ -36,15 +36,20 @@ class BasicCommand(object):
 
         """
         Detects the name of the current command by it's file's name and location
+
         :return: Name of the command
         """
 
         module_name = "_".join(cls.__module__.split("."))
-        for dir in sorted(settings.DJANGO_COMMANDER_COMMAND_FOLDERS, key=lambda x: len(x), reverse=True):
+        for dir in sorted(
+            settings.DJANGO_COMMANDER_COMMAND_FOLDERS,
+            key=lambda x: len(x),
+            reverse=True,
+        ):
             dir = dir.replace("/", "_")
             d = SequenceMatcher(None, dir, module_name)
             i, j, k = max(d.get_matching_blocks(), key=lambda x: x[2])
-            match = dir[i:i+k]
+            match = dir[i : i + k]
             if module_name.startswith(match) and dir.endswith(match):
                 module_name = re.sub(match, "", module_name).strip("_")
                 break
@@ -71,6 +76,7 @@ class BasicCommand(object):
         """
         Initializes the command and parses the parameters and options, checks for dependencies, and initializes
         a file cache.
+
         :param options:
         """
 
@@ -229,19 +235,22 @@ class DownloadIterateCommand(BasicCommand):
     This command class is designed to first load/download some sort of file, iterate over it, and then do something with
     each value. Accordingly, it requires four functions to be defined:
 
-    - `download`: Loads something and returns it. This function can be wrapped with the `@cache_results` decorator,
-    which can save the returned result locally or in Amazon S3. When this is enabled, you can pass the option
-    `--refresh_cache` to the command (this option exists on all commands by default) and it will refresh, otherwise
+    * `download`: Loads something and returns it. This function can be wrapped with the `@cache_results` decorator, \
+    which can save the returned result locally or in Amazon S3. When this is enabled, you can pass the option \
+    `--refresh_cache` to the command (this option exists on all commands by default) and it will refresh, otherwise \
     the cached version will be used. This can be useful if you're downloading large files.
-    - `iterate`: A function whose arguments should correspond to the value(s) returned by the `download` command. This
+
+    * `iterate`: A function whose arguments should correspond to the value(s) returned by the `download` command. This \
     function is expected to operate as an iterable, yielding objects to be processed.
-    - `parse_and_save`: A function whose arguments should correspond to the value(s) being yielded by the `iterate`
+
+    * `parse_and_save`: A function whose arguments should correspond to the value(s) being yielded by the `iterate` \
     command. This function should process each object, save things to the database, etc. No return value is expected.
-    - `cleanup`: A function that gets run after everything has finished. It's required, but you can just put `pass`
+
+    * `cleanup`: A function that gets run after everything has finished. It's required, but you can just put `pass` \
     there if there's no additional work to be done.
 
-    An example of when this type of command might be useful would be for a command that downloads a roster of
-    politicians, iterates over each row in the roster, and then looks up and updates information about the politician
+    An example of when this type of command might be useful would be for a command that downloads a roster of \
+    politicians, iterates over each row in the roster, and then looks up and updates information about the politician \
     in each row.
     """
 
@@ -268,7 +277,8 @@ class DownloadIterateCommand(BasicCommand):
     def iterate(self, *args, **options):
         """
         :param args: Passed from the download function
-        :return: Iterate must yield lists of parameters, each of which will be passed as positional arguments to
+
+        :return: Iterate must yield lists of parameters, each of which will be passed as positional arguments to \
         parse_and_save
         """
         raise NotImplementedError
@@ -276,6 +286,7 @@ class DownloadIterateCommand(BasicCommand):
     def parse_and_save(self, *args, **options):
         """
         :param args: Passed from the iterate function
+
         :return: None (commits to the database)
         """
         raise NotImplementedError
@@ -283,8 +294,9 @@ class DownloadIterateCommand(BasicCommand):
     @log_command
     def run(self):
         """
-        Checks dependencies, calls the download function.  Passes the values that are returned to iterate, which then
-        yields one or more sets of values to parse and save, which commits to the database.  Then calls cleanup
+        Checks dependencies, calls the download function.  Passes the values that are returned to iterate, which then \
+        yields one or more sets of values to parse and save, which commits to the database.  Then calls cleanup \
+
         :return: None
         """
         self.check_dependencies()
@@ -311,15 +323,19 @@ class IterateDownloadCommand(BasicCommand):
     that are stored in a database, downloads the Wikipedia page for each politician, and then saves each pages in the
     database. The required functions are:
 
-    - `iterate`: A function that iterates over a list of some sort and yields values.
-    - `download`: Arguments correspond to the values yielded by `iterate`; this function should fetch some data and
-    return it. Can be wrapped with the `@cache_results` decorator, which can save the returned result locally or in
-    Amazon S3. When this is enabled, you can pass the option `--refresh_cache` to the command (this option exists on
-    all commands by default) and it will refresh, otherwise the cached version will be used. This can be useful if
+    * `iterate`: A function that iterates over a list of some sort and yields values.
+
+    * `download`: Arguments correspond to the values yielded by `iterate`; this function should fetch some data and \
+    return it. Can be wrapped with the `@cache_results` decorator, which can save the returned result locally or in \
+    Amazon S3. When this is enabled, you can pass the option `--refresh_cache` to the command (this option exists on \
+    all commands by default) and it will refresh, otherwise the cached version will be used. This can be useful if \
     you're downloading large files.
-    - `parse_and_save`: A function whose arguments should correspond first to the values(s) yielded by `iterate` and
+
+    * `parse_and_save`: A function whose arguments should correspond first to the values(s) yielded by `iterate` and \
     then to the value(s) returned by `download`. No return value is expected.
-    - `cleanup`: A function to run after everything else has finished
+
+    * `cleanup`: A function to run after everything else has finished
+
     """
 
     def __init__(self, **options):
@@ -345,6 +361,7 @@ class IterateDownloadCommand(BasicCommand):
     def download(self, *args, **options):
         """
         :param args: Passed from the `iterate` function
+
         :return: Must return a single list of values that will be passed as additional arguments to `parse_and_save`
         """
         raise NotImplementedError
@@ -352,6 +369,7 @@ class IterateDownloadCommand(BasicCommand):
     def parse_and_save(self, *args, **options):
         """
         :param args: Consist of the values yielded by `iterate`, followed by the values returned by `download`
+
         :return: None (commits to the database)
         """
         raise NotImplementedError
@@ -362,6 +380,7 @@ class IterateDownloadCommand(BasicCommand):
         """
         Checks dependencies, calls the iterate function.  Passes the values that are returned to download, which then
         yields one or more sets of values to parse and save, which commits to the database.  Then calls cleanup
+
         :return: None
         """
 
@@ -392,10 +411,12 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
     the `parse_and_save` function in parallel to improve efficiency. Once all of the values have been processed by
     `parse_and_save`, the `cleanup` function will be run.
 
-    * For the multiprocessed version of this command, `parse_and_save` can optionally return values, and `cleanup`
-    will be passed a list of all of the returned values at the end of the command. Accordingly, `cleanup` must accept an
-    argument.
-    * Additionally, the `@log_command` must be added to `parse_and_save` to enable logging on these commands.
+    * For the multiprocessed version of this command, `parse_and_save` can optionally return values, and `cleanup` \
+    will be passed a list of all of the returned values at the end of the command. Accordingly, `cleanup` must accept \
+    an argument.
+
+    * Additionally, the `@log_command` decorator must be added to `parse_and_save` to enable logging on these commands.
+
     """
 
     def __init__(self, **options):
@@ -422,6 +443,7 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
     def download(self, *args, **options):
         """
         :param args:
+
         :return:
         """
         raise NotImplementedError
@@ -429,6 +451,7 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
     def parse_and_save(self, *args, **options):
         """
         :param args:
+
         :return:
         """
         raise NotImplementedError
@@ -475,10 +498,12 @@ class MultiprocessedDownloadIterateCommand(BasicCommand):
     the `parse_and_save` function in parallel to improve efficiency. Once all of the values have been processed by
     `parse_and_save`, the `cleanup` function will be run.
 
-    * For the multiprocessed version of this command, `parse_and_save` can optionally return values, and `cleanup`
-    will be passed a list of all of the returned values at the end of the command. Accordingly, `cleanup` must accept an
-    argument.
-    * Additionally, the `@log_command` must be added to `parse_and_save` to enable logging on these commands.
+    * For the multiprocessed version of this command, `parse_and_save` can optionally return values, and `cleanup` \
+    will be passed a list of all of the returned values at the end of the command. Accordingly, `cleanup` must accept \
+    an argument.
+
+    * Additionally, the `@log_command` decorator must be added to `parse_and_save` to enable logging on these commands.
+
     """
 
     def __init__(self, **options):
