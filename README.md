@@ -7,7 +7,7 @@ command system.  Here are some things that Django Commander does that you can't 
 1. Organize and nest your management commands into subfolders and easily access them from the command line
 with no hassle
 2. Automatically log commands that get run
-3. Use a standardized system for loading and processing data
+3. Use standardized processes for loading and processing data
 4. Keep track of the objects in your database that get modified by each command
 5. Easily run your commands programmatically and have them return values
 
@@ -40,17 +40,17 @@ place them in as many folders as you want, provided that you include their locat
 
 ```python
 DJANGO_COMMANDER_COMMAND_FOLDERS = [
-    os.path.abspath(os.path.join(YOUR_APP_ROOT, "commands").decode('utf-8')).replace('\\', '/'),
+    os.path.abspath(os.path.join(YOUR_APP_ROOT, "commands")),
 ]
 ```
 
-### Multiprocessing and Task Management
+#### Multiprocessing and Task Management
 
 In some cases, your commands will be long-running, and you may wish to run them in parallel and/or use
 a task management system to schedule and execute them rather than using cronjobs or the shell.
 Django Commander comes with a convenient wrapper that can run any command as a Celery task:
 `django_commander.utils.run_command_task`.  For this to work, you need to have Celery installed in your main
-application.  The only settings you'll need to add in your main `settings.py` file are:
+application.  The settings you'll need to add in your main `settings.py` file are:
 
 ```python
 CELERY_BROKER_URL = "redis://localhost:6379/0"
@@ -62,6 +62,24 @@ CELERY_RESULT_SERIALIZER = "pickle"
 ```
 
 Obviously, adapt the endpoints to connect to whatever broker and backend services you want.
+
+####  Caching
+
+Django Commander `DownloadIterateCommand` and `IterateDownloadCommand` commands provide caching, which can be useful 
+if you're iterating over large files that don't change very often. To enable this functionality, you need to specify 
+a `DJANGO_COMMANDER_CACHE_PATH` setting. By default this will be a local folder, but you can also use S3 by specifying 
+additional parameters:
+
+```python
+
+DJANGO_COMMANDER_CACHE_PATH = "cache"
+
+# For S3, define the following additional settings:
+DJANGO_COMMANDER_USE_S3 = True
+S3_BUCKET = "my_s3_bucket"
+AWS_ACCESS_KEY_ID = "my_access_key"
+AWS_SECRET_ACCESS_KEY = "my_secret_access_key"
+```
 
 ## Using Django Commander
 
@@ -90,8 +108,8 @@ class Command(BasicCommand):
     dependencies = [
         ("process_category", {"category": lambda x: x.parameters["category"]})
     ]
-    test_parameters = {}
-    test_options = {}
+    test_parameters = {"category": "A"}
+    test_options = {"refresh_processed": False}
 
     @staticmethod
     def add_arguments(parser):
@@ -116,7 +134,7 @@ class Command(BasicCommand):
 
 ```
 
-NOTE: in Python 2, all commands must have `from __future__ import absolute_import` at the start of the file
+NOTE: in Python 2, all commands must have `from __future__ import absolute_import` at the start of the file.
 
 The name of the command will be automatically determined by its filename, and any subfolders it's nested inside. 
 Commands consist of a few different components.
@@ -127,7 +145,7 @@ All arguments for a command are defined in an `add_arguments` function that's de
 defined just like normal Django commands, using argparse syntax. Django Commander expects this to be a `staticmethod`.
 
 Unlike base Django, Django Commander distinguishes between `parameters` and `options`, which is useful for logging and 
-tracking commands that have been run. Parameters are defined as arguments that define the core functionality of the 
+tracking commands that have been run. Parameters are defined as arguments that define the _core functionality_ of the 
 command, and have no default values - they are not optional. For example, if you have a command to scrape a website, 
 you may demand a parameter for the domain to be scraped. Parameters are specified by including their name in a 
 `parameter_names` property on the command class. Options, on the other hand, are simply optional; in the case of a 
@@ -158,13 +176,16 @@ used during testing. While custom unit tests are recommended for any important c
 used for long-running data collection processes or analysis tasks, and it can often be useful to simply know whether 
 or not a command can execute successfully, without testing all of its functionality on all possible input data. To help 
 with this, you can call any command with the `test` option and define test behavior within your command with conditionals 
-based on the value of `self.options["test"]`. If `test_parameters` and `test_options` are defined, you don't need to 
-provide any arguments of your own.
+based on the value of `self.options["test"]` (a boolean). If `test_parameters` and `test_options` are defined, you 
+don't need to provide any arguments of your own.
 
 #### Organizing command logic
 
-The most basic Django Commander command, `BasicCommand` has a single function in which to place your command logic: 
-`run`. This function should contain the full script of your command.
+To create your own Django Commander command, you simply have to create a file in one of your command folders 
+(which you specify in `settings.py`), create a class that inherits from one of Django Commander's core command 
+classes, and overwrite one or more functions on that class. The most basic Django Commander command, `BasicCommand` 
+has a single function in which to place your command logic: `run`. This function should contain the full script 
+of your command. 
 
 However, Django Commander also offers more complex types of commands specifically designed to encourage a consistent 
 method for working with data. These take the form of the `DownloadIterateCommand` and `IterateDownloadCommand`. Each of 
@@ -178,17 +199,19 @@ This command class is designed to first load/download some sort of file, iterate
 each value. Accordingly, it requires four functions to be defined:
 
 - `download`: Loads something and returns it. This function can be wrapped with the `@cache_results` decorator, which 
-can save the returned result locally or in Amazon S3. When this is enabled, you can pass the option `--refresh_cache` to 
-the command (this option exists on all commands by default) and it will refresh, otherwise the cached version will be 
-used. This can be useful if you're downloading large files.
+  can save the returned result locally or in Amazon S3. When this is enabled, you can pass the option `--refresh_cache` to 
+  the command (this option exists on all commands by default) and it will refresh, otherwise the cached version will be 
+  used. This can be useful if you're downloading large files that don't change very often.
 - `iterate`: A function whose arguments should correspond to the value(s) returned by the `download` command. This 
-function is expected to operate as an iterable, yielding objects to be processed.
+  function is expected to operate as an iterable, yielding objects to be processed. For example, your `download` function 
+  may return a dataframe, which gets passed to `iterate`. Your `iterate` function might then loop over each row in 
+  the table and yield it to the next function, `parse_and_save`.
 - `parse_and_save`: A function whose arguments should correspond to the value(s) being yielded by the `iterate` 
-command. This function should process each object, save things to the database, etc. No return value is expected.
+  command. This function should process each object, save things to your database, etc. No return value is expected.
 - `cleanup`: A function that gets run after everything has finished. It's required, but you can just put `pass` there 
-if there's no additional work to be done.
+  if there's no additional work to be done.
 
-An example of when this type of command might be useful would be for a command that downloads a roster of politicians, 
+An example of when this type of command might be useful would be a command that downloads a roster of politicians, 
 iterates over each row in the roster, and then looks up and updates information about the politician in each row.
 
 Example: 
@@ -242,12 +265,12 @@ The required functions are:
 
 - `iterate`: A function that iterates over a list of some sort and yields values.
 - `download`: Arguments correspond to the values yielded by `iterate`; this function should fetch some data and return 
-it. Can be wrapped with the `@cache_results` decorator, which can save the returned result locally or in Amazon S3. 
-When this is enabled, you can pass the option `--refresh_cache` to the command (this option exists on all commands 
-by default) and it will refresh, otherwise the cached version will be used. This can be useful if you're downloading 
-large files.
+  it. It can be wrapped with the `@cache_results` decorator, which can save the returned result locally or in Amazon S3. 
+  When this is enabled, you can pass the option `--refresh_cache` to the command (this option exists on all commands 
+  by default) and it will refresh, otherwise the cached version will be used. This can be useful if you're downloading 
+  large files.
 - `parse_and_save`: A function whose arguments should correspond first to the values(s) yielded by `iterate` and then 
-to the value(s) returned by `download`. No return value is expected.
+  to the value(s) returned by `download`. No return value is expected.
 - `cleanup`: A function to run after everything else has finished
 
 ```python
@@ -296,8 +319,8 @@ multiprocessing) and they will apply the `parse_and_save` functions in parallel 
 values have been processed by `parse_and_save`, the `cleanup` function will be run.
 
 * One difference between these and other commands is that `parse_and_save` can optionally return values, and `cleanup` 
-will be passed a list of all of the returned values at the end of the command. Accordingly, `cleanup` must accept an 
-argument.
+  will be passed a list of all of the returned values at the end of the command. Accordingly, `cleanup` must accept an 
+  argument.
 * Additionally, the `@log_command` must be added to `parse_and_save` to enable logging on these commands.
 
 
@@ -319,12 +342,12 @@ $ python manage.py run_command scrapers_my_command PARAM_VALUE --my_option OPTIO
 
 #### Logging
 
-Django Commander allows for the logging of commands in the database. To enable this functionality, you can apply the 
+Django Commander allows for the logging of commands in your database. To enable this functionality, you can apply the 
 `@log_command` decorator to the `run` function of a `BasicCommand` (all other commands have logging enabled by default.) 
 When logging is enabled, every time a command is run it creates a new object in the 
 `django_commander.models.CommandLog` table. A `django_commander.models.Command` object is automatically created when a 
 new command is first run, which is unique to the name of the command and the parameters that were passed to it. 
-(Commands run with different _options_ are treated as the same `Command` and the different options are stored on the 
+(Commands invoked with different _options_ are treated as the same `Command` and the different options are stored on the 
 `CommandLog` table.) You can then see details on all of your commands by querying these tables, like so:
 
 ```python
@@ -341,8 +364,8 @@ specific `CommandLog`s with any objects in the database - which can be enormousl
 have been created or modified by different commands and when. To enable this tracking on any model in your app, you 
 simply need to have it inherit from `django_commander.models.LoggedExtendedModel`, which is an extension of the 
 `django_pewtils` `BasicExtendedModel`. The `LoggedExtendedModel` class automatically creates relations with the 
-`django_commander` `Command` and `CommandLog` models, so that your commands can create these associations while the 
-execute, like so:
+`django_commander` `Command` and `CommandLog` models, making it easy to create associations between objects in your 
+database and the commands that run operations on them, like so:
 
 ```python
 @log_command
@@ -353,8 +376,8 @@ def run(self):
 
 #### Accessing Commands Directly
 
-Django Commander also lets you access your commands directly.  It automatically scans every Django app
-you have installed, and extracts all of the command classes into a single dictionary, found in
+Django Commander also lets you access your commands directly (instead of via the CLI).  It automatically scans every 
+Django app you have installed, and extracts all of the command classes into a single dictionary, found in
 `django_commander.commands.commands`.  You can import this from any app in your project, and run the commands
 manually, if you so choose:
 
@@ -377,5 +400,20 @@ print(command.logs.order_by("-end_time")[0])
 
 Unlike traditional Django commands, Django Commander commands can return values. Examples of how this can be useful 
 include having a command return its current API key if you're cycling through multiple keys, or returning an object 
-that the command created.
+that the command created and then doing something with it:
+
+```python
+from django_commander.commands import commands
+
+# Doing something with return values, like running additional commands
+return_values = commands["my_command"](PARAM_VALUE, my_option=OPTION_VALUE).run()
+for value in return_values:
+  commands["another_command"](value).run()
+  
+# Keeping a changing parameter (like an API key) up-to-date while looping
+changing_variable = 1
+for value in MY_LIST:
+  changing_variable = commands["my_command"](value, var=changing_variable).run()
+
+```
 
