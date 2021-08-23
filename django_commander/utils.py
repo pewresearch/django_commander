@@ -20,6 +20,14 @@ class MissingDependencyException(Exception):
 
 @shared_task
 def run_command_task(command_name, params):
+    """
+    Run a command as a Celery task
+
+    :param command_name: Name of the command (with subfolders underscore-concatenated)
+    :param params: Dictionary of parameters and options
+
+    :return: A success or error message
+    """
 
     try:
         from django_commander.commands import commands
@@ -83,11 +91,8 @@ def cache_results(func):
     def wrapper(self, *args, **options):
 
         """
-        Gets wrapped on the download function
-
-        Uses the cache folder in the logos-data S3 bucket if ENV is set to prod or prod-read-only; otherwise it
-        uses a local cache (for local/dev/test environments).  If set to prod-read-only, it doesn't save anything,
-        it just loads from the prod cache.
+        A decorator that can be added to the `download` function on a `DownloadIterateCommand` or
+        `IterateDownloadCommand`. Caches the results either locally or in S3 based on your settings.
         """
 
         hashstr = (
@@ -119,6 +124,17 @@ def cache_results(func):
 
 def command_multiprocess_wrapper(command_name, parameters, options, *args):
 
+    """
+    Decorator that resets Django connections for multiprocessing
+
+    :param command_name: Name of the command
+    :param parameters: Command parameters
+    :param options: Command options
+    :param args: Additional arguments
+
+    :return:
+    """
+
     params = {}
     params.update(parameters)
     params.update(options)
@@ -130,6 +146,10 @@ def command_multiprocess_wrapper(command_name, parameters, options, *args):
 
 
 def test_commands():
+
+    """
+    Loops over all commands, and runs any that have defined `test_parameters`.
+    """
 
     from django_commander.commands import commands
 
@@ -147,6 +167,9 @@ def test_commands():
 
 
 def clear_unfinished_command_logs():
+    """
+    Clears out extra logs in the database for commands that didn't log an end time.
+    """
 
     for command in tqdm(Command.objects.all(), desc="Clearing extra logs"):
         command.logs.filter(error__isnull=False).delete()
