@@ -472,11 +472,8 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
                     + list(dargs)
                     + list(iargs)
                 )
-                if (
-                    "test" in list(self.options.keys()) and self.options["test"]
-                ) or self.options["num_cores"] == 1:
-                    # pool.apply(command_multiprocess_wrapper, args=pargs)
-                    command_multiprocess_wrapper(*pargs)
+                if self.options["num_cores"] == 1:
+                    pool.apply(command_multiprocess_wrapper, args=pargs)
                 else:
                     results.append(
                         pool.apply_async(command_multiprocess_wrapper, args=pargs)
@@ -539,11 +536,8 @@ class MultiprocessedDownloadIterateCommand(BasicCommand):
         pool = Pool(processes=self.options["num_cores"])
         for iargs in self.iterate(*dargs):
             iargs = [self.name] + [self.parameters] + [self.options] + list(iargs)
-            if (
-                "test" in list(self.options.keys()) and self.options["test"]
-            ) or self.options["num_cores"] == 1:
-                # pool.apply(command_multiprocess_wrapper, args=iargs)
-                command_multiprocess_wrapper(*iargs)
+            if self.options["num_cores"] == 1:
+                pool.apply(command_multiprocess_wrapper, args=iargs)
             else:
                 results.append(
                     pool.apply_async(command_multiprocess_wrapper, args=iargs)
