@@ -35,7 +35,6 @@ class Command(BaseCommand):
         parser.add_argument("subcommand_name", type=str)
         if self.subcommand_name in commands.keys():
             parser = commands[self.subcommand_name].create_or_modify_parser(parser)
-        parser.add_argument("--multiprocess", default=False, action="store_true")
         parser.add_argument("--num_cores", default=1, type=int)
 
         return parser
@@ -70,20 +69,5 @@ class Command(BaseCommand):
 
         options["dispatched"] = True
 
-        if options["multiprocess"]:
-
-            celery_task = run_command_task.apply_async(
-                (self.subcommand_name, options), queue="celery"
-            )
-            log = (
-                get_model("Command", app_name="django_commander")
-                .objects.get(name__endswith=self.subcommand_name)
-                .logs.order_by("-start_time")[0]
-            )
-            log.celery_task_id = celery_task.task_id
-            log.save()
-
-        else:
-
-            d = commands[self.subcommand_name](**options)
-            d.run()
+        d = commands[self.subcommand_name](**options)
+        d.run()
