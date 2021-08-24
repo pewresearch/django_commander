@@ -1,10 +1,13 @@
 from __future__ import print_function
 
-import subprocess
+import subprocess, os
 
 from django.test import TestCase as DjangoTestCase
 from django.test import TransactionTestCase as DjangoTransactionTestCase
 from django.core.management import call_command
+from django.conf import settings
+
+from django_pewtils import CacheHandler
 
 from django_commander.commands import commands, MissingDependencyException
 from django_commander.models import Command, CommandLog
@@ -69,6 +72,19 @@ class BaseTests(DjangoTransactionTestCase):
             .count(),
             1,
         )
+        cache = CacheHandler(
+            os.path.join(
+                settings.DJANGO_COMMANDER_CACHE_PATH, "test_download_iterate_command"
+            ),
+            hash=False,
+            use_s3=settings.DJANGO_COMMANDER_USE_S3,
+            aws_access=settings.AWS_ACCESS_KEY_ID,
+            aws_secret=settings.AWS_SECRET_ACCESS_KEY,
+            bucket=settings.S3_BUCKET,
+        )
+        value = cache.read("test_download_iterate_commanddownload(){}")
+        self.assertEqual(value, [["bob", "shelly"]])
+        commands["test_download_iterate_command"](refresh_cache=False).run()
         commands["test_download_iterate_command"](refresh_cache=True).run()
 
     def test_iterate_download_command(self):
@@ -88,6 +104,22 @@ class BaseTests(DjangoTransactionTestCase):
             .count(),
             1,
         )
+        cache = CacheHandler(
+            os.path.join(
+                settings.DJANGO_COMMANDER_CACHE_PATH, "test_iterate_download_command"
+            ),
+            hash=False,
+            use_s3=settings.DJANGO_COMMANDER_USE_S3,
+            aws_access=settings.AWS_ACCESS_KEY_ID,
+            aws_secret=settings.AWS_SECRET_ACCESS_KEY,
+            bucket=settings.S3_BUCKET,
+        )
+        for name in ["bob", "shelly"]:
+            value = cache.read(
+                "test_iterate_download_commanddownload('" + name + "',){}"
+            )
+            self.assertEqual(value, [name.upper()])
+        commands["test_iterate_download_command"](refresh_cache=False).run()
         commands["test_iterate_download_command"](refresh_cache=True).run()
 
     def test_database_models(self):
@@ -116,13 +148,21 @@ class BaseTests(DjangoTransactionTestCase):
     def test_test_commands(self):
 
         test_commands()
+        from django_commander.commands import commands
+
+        for command_name in commands.keys():
+            self.assertTrue(
+                os.path.exists(
+                    os.path.join(
+                        settings.DJANGO_COMMANDER_CACHE_PATH, command_name, "test"
+                    )
+                )
+            )
 
     def test_multiprocessed_download_iterate_command(self):
         from django_pewtils import reset_django_connection
 
-        commands["test_multiprocessed_download_iterate_command"](
-            num_cores=2, test=True
-        ).run()
+        commands["test_multiprocessed_download_iterate_command"](num_cores=2).run()
         reset_django_connection()
         self.assertEqual(Parent.objects.filter(name="bob").count(), 1)
         self.assertEqual(Parent.objects.filter(name="shelly").count(), 1)
@@ -138,17 +178,28 @@ class BaseTests(DjangoTransactionTestCase):
             .count(),
             1,
         )
+        cache = CacheHandler(
+            os.path.join(
+                settings.DJANGO_COMMANDER_CACHE_PATH,
+                "test_multiprocessed_download_iterate_command",
+            ),
+            hash=False,
+            use_s3=settings.DJANGO_COMMANDER_USE_S3,
+            aws_access=settings.AWS_ACCESS_KEY_ID,
+            aws_secret=settings.AWS_SECRET_ACCESS_KEY,
+            bucket=settings.S3_BUCKET,
+        )
+        value = cache.read("test_multiprocessed_download_iterate_commanddownload(){}")
+        self.assertEqual(value, [["bob", "shelly"]])
         commands["test_multiprocessed_download_iterate_command"](
-            num_cores=2, refresh_cache=True, test=True
+            num_cores=2, refresh_cache=True
         ).run()
         reset_django_connection()
 
     def test_multiprocessed_iterate_download_command(self):
         from django_pewtils import reset_django_connection
 
-        commands["test_multiprocessed_iterate_download_command"](
-            num_cores=2, test=True
-        ).run()
+        commands["test_multiprocessed_iterate_download_command"](num_cores=2).run()
         reset_django_connection()
         self.assertEqual(Parent.objects.filter(name="BOB").count(), 1)
         self.assertEqual(Parent.objects.filter(name="SHELLY").count(), 1)
@@ -164,8 +215,26 @@ class BaseTests(DjangoTransactionTestCase):
             .count(),
             1,
         )
+        cache = CacheHandler(
+            os.path.join(
+                settings.DJANGO_COMMANDER_CACHE_PATH,
+                "test_multiprocessed_iterate_download_command",
+            ),
+            hash=False,
+            use_s3=settings.DJANGO_COMMANDER_USE_S3,
+            aws_access=settings.AWS_ACCESS_KEY_ID,
+            aws_secret=settings.AWS_SECRET_ACCESS_KEY,
+            bucket=settings.S3_BUCKET,
+        )
+        for name in ["bob", "shelly"]:
+            value = cache.read(
+                "test_multiprocessed_iterate_download_commanddownload('"
+                + name
+                + "',){}"
+            )
+            self.assertEqual(value, [name.upper()])
         commands["test_multiprocessed_iterate_download_command"](
-            num_cores=2, refresh_cache=True, test=True
+            num_cores=2, refresh_cache=True
         ).run()
         reset_django_connection()
 
