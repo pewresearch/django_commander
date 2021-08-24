@@ -3,6 +3,7 @@ from __future__ import print_function
 import subprocess
 
 from django.test import TestCase as DjangoTestCase
+from django.test import TransactionTestCase as DjangoTransactionTestCase
 from django.core.management import call_command
 
 from django_commander.commands import commands, MissingDependencyException
@@ -12,7 +13,7 @@ from django_commander.utils import clear_unfinished_command_logs, test_commands
 from testapp.models import Parent, Child
 
 
-class BaseTests(DjangoTestCase):
+class BaseTests(DjangoTransactionTestCase):
 
     """
     To test, navigate to django_commander root folder and run `python manage.py test testapp.tests`
@@ -117,10 +118,12 @@ class BaseTests(DjangoTestCase):
         test_commands()
 
     def test_multiprocessed_download_iterate_command(self):
+        from django_pewtils import reset_django_connection
 
         commands["test_multiprocessed_download_iterate_command"](
-            num_cores=1, test=True
+            num_cores=2, test=True
         ).run()
+        reset_django_connection()
         self.assertEqual(Parent.objects.filter(name="bob").count(), 1)
         self.assertEqual(Parent.objects.filter(name="shelly").count(), 1)
         self.assertEqual(
@@ -136,13 +139,17 @@ class BaseTests(DjangoTestCase):
             1,
         )
         commands["test_multiprocessed_download_iterate_command"](
-            num_cores=1, refresh_cache=True, test=True
+            num_cores=2, refresh_cache=True, test=True
         ).run()
+        reset_django_connection()
 
     def test_multiprocessed_iterate_download_command(self):
+        from django_pewtils import reset_django_connection
+
         commands["test_multiprocessed_iterate_download_command"](
-            num_cores=1, test=True
+            num_cores=2, test=True
         ).run()
+        reset_django_connection()
         self.assertEqual(Parent.objects.filter(name="BOB").count(), 1)
         self.assertEqual(Parent.objects.filter(name="SHELLY").count(), 1)
         self.assertEqual(
@@ -158,8 +165,9 @@ class BaseTests(DjangoTestCase):
             1,
         )
         commands["test_multiprocessed_iterate_download_command"](
-            num_cores=1, refresh_cache=True, test=True
+            num_cores=2, refresh_cache=True, test=True
         ).run()
+        reset_django_connection()
 
     def test_views(self):
 
