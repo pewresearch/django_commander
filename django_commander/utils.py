@@ -95,8 +95,9 @@ def cache_results(func):
             or options.get("refresh_cache", False)
         ):
             print(
-                "Refreshing cached data from source for command '%s.%s'"
-                % (str(self.__class__.name), str(func.__name__))
+                "Refreshing cached data from source for command '{}.{}'".format(
+                    str(self.__class__.name), str(func.__name__)
+                )
             )
             data = func(self, *args)
             self.cache.write(hashstr, data)
