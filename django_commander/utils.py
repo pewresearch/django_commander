@@ -1,6 +1,5 @@
 import traceback, datetime
 
-from celery import shared_task
 from tqdm import tqdm
 
 try:
@@ -16,26 +15,6 @@ from django_commander.models import Command, CommandLog
 
 class MissingDependencyException(Exception):
     pass
-
-
-@shared_task
-def run_command_task(command_name, params):
-    """
-    Run a command as a Celery task
-
-    :param command_name: Name of the command (with subfolders underscore-concatenated)
-    :param params: Dictionary of parameters and options
-
-    :return: A success or error message
-    """
-
-    try:
-        from django_commander.commands import commands
-
-        commands[command_name](**params).run()
-        return "Success: {}".format(command_name)
-    except Exception as e:
-        return e
 
 
 def log_command(handle):
