@@ -19,6 +19,8 @@ class MissingDependencyException(Exception):
 
 def log_command(handle):
     def wrapper(self, *args, **options):
+        if "num_cores" in self.options and self.options["num_cores"] > 1:
+            reset_django_connection()
         self.command = Command.objects.create_or_update(
             {"name": self.name, "parameters": self.parameters}
         )
@@ -39,6 +41,8 @@ def log_command(handle):
         self.log_id = int(self.log.pk)
         try:
             result = handle(self, *args, **options)
+            if "num_cores" in self.options and self.options["num_cores"] > 1:
+                reset_django_connection()
             if self.log:
                 self.log.end_time = datetime.datetime.now()
                 try:
@@ -46,6 +50,7 @@ def log_command(handle):
                 except:
                     # sometimes for really long-standing processes, there's a timeout SSL error
                     # so, we'll just fetch the log object again before saving and closing out
+                    reset_django_connection()
                     self.log = CommandLog.objects.get(pk=self.log_id)
                     self.log.end_time = datetime.datetime.now()
                     self.log.save()
@@ -117,8 +122,8 @@ def command_multiprocess_wrapper(command_name, parameters, options, *args):
     params = {}
     params.update(parameters)
     params.update(options)
-    if not params.get("test", False):
-        reset_django_connection()
+    # if not params.get("test", False):
+    reset_django_connection()
     from django_commander.commands import commands
 
     return commands[command_name](**params).parse_and_save(*args)
