@@ -161,17 +161,6 @@ class BaseTests(DjangoTestCase):
             num_cores=1, refresh_cache=True, test=True
         ).run()
 
-    def test_multiprocessing(self):
-        pass
-        # # Haven't figured out how to test multiprocessing; the unit testing module keeps the db in a single transaction
-        # # Also, when you trigger manage.py externally, it's going to try to use the main database, not the test one
-        # process = subprocess.Popen(
-        #     ['python', 'manage.py', 'run_command_task', 'test_command', 'bob', '--child_name', 'jeff'],
-        #     stdout=subprocess.PIPE,
-        #     stderr=subprocess.PIPE
-        # )
-        # stdout, stderr = process.communicate()
-
     def test_views(self):
 
         from django.urls import reverse
