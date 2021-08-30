@@ -354,7 +354,7 @@ from django_commander.models import LoggedExtendedModel
 
 # Do this, instead of the above:
 class MyModel(LoggedExtendedModel):
-    pass
+    objects = LoggedExtendedManager().as_manager()
 ```
 
 The `LoggedExtendedModel` class automatically creates relations with the 
@@ -410,4 +410,3 @@ for value in MY_LIST:
   changing_variable = commands["my_command"](value, var=changing_variable).run()
 
 ```
-
