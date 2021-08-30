@@ -20,6 +20,7 @@ command system.  Here are some things that Django Commander does that you can't 
    Abstract Command Types <commands>
    Django Models <models>
    Utility Functions <utils>
+   Example <example>
 
 
 

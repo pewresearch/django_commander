@@ -429,7 +429,7 @@ of the ``django_pewtils`` ``BasicExtendedModel``.
 
     # Do this, instead of the above:
     class MyModel(LoggedExtendedModel):
-        pass
+        objects = LoggedExtendedManager().as_manager()
 
 The ``LoggedExtendedModel`` class automatically creates relations with the
 ``django_commander`` ``Command`` and ``CommandLog`` models, making it
