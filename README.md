@@ -343,7 +343,21 @@ the time it finished and any errors that were encountered. However, Django Comma
 specific `CommandLog`s with any objects in the database - which can be enormously useful for tracking which objects 
 have been created or modified by different commands and when. To enable this tracking on any model in your app, you 
 simply need to have it inherit from `django_commander.models.LoggedExtendedModel`, which is an extension of the 
-`django_pewtils` `BasicExtendedModel`. The `LoggedExtendedModel` class automatically creates relations with the 
+`django_pewtils` `BasicExtendedModel`. 
+
+```python
+from django.db import models
+from django_commander.models import LoggedExtendedModel
+
+# class MyModel(models.Model):
+#     pass
+
+# Do this, instead of the above:
+class MyModel(LoggedExtendedModel):
+    pass
+```
+
+The `LoggedExtendedModel` class automatically creates relations with the 
 `django_commander` `Command` and `CommandLog` models, making it easy to create associations between objects in your 
 database and the commands that run operations on them, like so:
 
