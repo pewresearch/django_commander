@@ -22,7 +22,7 @@ with open("requirements.txt") as reqs:
 
 setup(
     name="django_commander",
-    version='0.1.3.dev1',
+    version='0.1.3',
     description="Easily create, organize, and log management commands and subcommands",
     long_description=README,  # 'http://labs.pewresearch.tech/docs/libs/django_commander',
     url="https://github.com/pewresearch/django_commander",
