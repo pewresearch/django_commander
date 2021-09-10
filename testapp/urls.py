@@ -1,11 +1,11 @@
-from django.conf.urls import include, url
-from django.http import HttpResponse
+from django.conf.urls import include
+from django.urls import re_path
 from testapp import views
 
 
 urlpatterns = [
-    url(r"^login$", views.login, name="login"),
-    url(r"^logout$", views.logout, name="logout"),
+    re_path(r"^login$", views.login, name="login"),
+    re_path(r"^logout$", views.logout, name="logout"),
 ]
 
-urlpatterns += [url(r"^commands/", include("django_commander.urls"))]
+urlpatterns += [re_path(r"^commands/", include("django_commander.urls"))]
