@@ -11,7 +11,6 @@ from django.core.management.base import (
 from django_pewtils import get_model
 
 from django_commander.commands import commands
-from django_commander.utils import run_command_task
 
 
 class Command(BaseCommand):
