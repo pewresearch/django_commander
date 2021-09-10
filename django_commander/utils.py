@@ -18,6 +18,15 @@ class MissingDependencyException(Exception):
     pass
 
 
+def run_command_task(*args, **kwargs):
+    """
+    DEPRECATED
+    """
+    print(
+        "django_commander.utils.run_command_task iss deprecated, please use django_commander.utils.run_command_async"
+    )
+
+
 def run_command_async(command_name, **params):
 
     """
