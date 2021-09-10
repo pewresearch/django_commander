@@ -4,11 +4,13 @@ import django.contrib.postgres.fields.jsonb
 import datetime
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import migrations
+import ast
+import json
 
 
 def convert_parameters_to_json(apps, schema_editor):
     Command = apps.get_model("django_commander", "Command")
-    for command in Command.objects.all():
+    for command in Command.objects.iterator():
         params = eval(command.parameters_old)
         command.parameters = params
         command.save()
@@ -16,10 +18,26 @@ def convert_parameters_to_json(apps, schema_editor):
 
 def convert_options_to_json(apps, schema_editor):
     CommandLog = apps.get_model("django_commander", "CommandLog")
-    for log in CommandLog.objects.all():
-        opts = eval(log.options_old)
+    for log in CommandLog.objects.iterator():
+        try:
+            opts = ast.literal_eval(log.options_old)
+
+        except:
+            try:
+                opts = json.loads(log.options_old)
+
+            except:
+                print(log.options_old)
+                opts = {}
+
         log.options = opts
-        log.save()
+
+        try:
+            log.save()
+
+        except:
+            import pdb
+            pdb.set_trace()
 
 
 class Migration(migrations.Migration):
