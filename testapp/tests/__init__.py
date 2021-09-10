@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-import subprocess, os
+import subprocess, os, time
 
 from django.test import TestCase as DjangoTestCase
 from django.test import TransactionTestCase as DjangoTransactionTestCase
@@ -280,6 +280,14 @@ class BaseTests(DjangoTransactionTestCase):
         log = CommandLog.objects.create(command=command)
         parent.command_logs.add(log)
         self.assertIn(command, parent.commands.all())
+
+    def test_run_command_async(self):
+
+        from django_commander.utils import run_command_async
+        run_command_async("test_command", parent_name="bobby", child_name="bobby jr.")
+        time.sleep(5)
+        self.assertEqual(Parent.objects.filter(name="bobby").count(), 1)
+        self.assertEqual(Child.objects.filter(name="bobby jr.").count(), 1)
 
     def tearDown(self):
         from django.conf import settings

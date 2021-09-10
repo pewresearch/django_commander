@@ -1,6 +1,7 @@
-import traceback, datetime
+import traceback, datetime, os
 
 from tqdm import tqdm
+from multiprocessing import Process
 
 try:
     from inspect import signature
@@ -8,13 +9,29 @@ except ImportError:
     from funcsigs import signature
 
 from pewtils import is_not_null
-from django_pewtils import reset_django_connection
+from django_pewtils import reset_django_connection, get_model
 
 from django_commander.models import Command, CommandLog
 
 
 class MissingDependencyException(Exception):
     pass
+
+
+def run_command_async(command_name, **params):
+
+    settings_module = os.environ['DJANGO_SETTINGS_MODULE']
+    p = Process(target=_command_wrapper, args=(settings_module, command_name), kwargs=params)
+    p.start()
+
+
+def _command_wrapper(settings_module, command_name, **params):
+
+    import os, django
+    os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
+    django.setup()
+    from django_commander.commands import commands
+    commands[command_name](**params).run()
 
 
 def log_command(handle):
