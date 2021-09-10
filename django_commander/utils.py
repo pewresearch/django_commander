@@ -28,9 +28,11 @@ def run_command_async(command_name, **params):
 def _command_wrapper(settings_module, command_name, **params):
 
     import os, django
-    os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
+
+    os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
     django.setup()
     from django_commander.commands import commands
+
     commands[command_name](**params).run()
 
 

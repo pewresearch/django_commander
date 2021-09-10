@@ -284,6 +284,7 @@ class BaseTests(DjangoTransactionTestCase):
     def test_run_command_async(self):
 
         from django_commander.utils import run_command_async
+
         run_command_async("test_command", parent_name="bobby", child_name="bobby jr.")
         time.sleep(5)
         self.assertEqual(Parent.objects.filter(name="bobby").count(), 1)
