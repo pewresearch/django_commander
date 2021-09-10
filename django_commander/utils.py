@@ -20,8 +20,17 @@ class MissingDependencyException(Exception):
 
 def run_command_async(command_name, **params):
 
-    settings_module = os.environ['DJANGO_SETTINGS_MODULE']
-    p = Process(target=_command_wrapper, args=(settings_module, command_name), kwargs=params)
+    """
+    Run a command asynchronously as a subprocess
+    :param command_name: Name of the command
+    :param params: Parameters and options, passed as kwargs
+    :return:
+    """
+
+    settings_module = os.environ["DJANGO_SETTINGS_MODULE"]
+    p = Process(
+        target=_command_wrapper, args=(settings_module, command_name), kwargs=params
+    )
     p.start()
 
 
