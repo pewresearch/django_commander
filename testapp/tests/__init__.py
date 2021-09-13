@@ -1,6 +1,7 @@
 from __future__ import print_function
 
-import subprocess, os, time
+import os
+import time
 
 from django.test import TestCase as DjangoTestCase
 from django.test import TransactionTestCase as DjangoTransactionTestCase
