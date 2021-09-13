@@ -1,4 +1,6 @@
-import traceback, datetime, os
+import traceback
+import datetime
+import os
 
 from tqdm import tqdm
 from multiprocessing import Process
@@ -9,7 +11,7 @@ except ImportError:
     from funcsigs import signature
 
 from pewtils import is_not_null
-from django_pewtils import reset_django_connection, get_model
+from django_pewtils import reset_django_connection
 
 from django_commander.models import Command, CommandLog
 
@@ -45,7 +47,8 @@ def run_command_async(command_name, **params):
 
 def _command_wrapper(settings_module, command_name, **params):
 
-    import os, django
+    import os
+    import django
 
     os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
     django.setup()
