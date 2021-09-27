@@ -1,4 +1,3 @@
-from builtins import str
 import os
 from setuptools import setup, find_packages
 
@@ -36,13 +35,13 @@ setup(
         #        'Development Status :: 5 - Production/Stable',
         #        'Development Status :: 6 - Mature',
         #        'Development Status :: 7 - Inactive'
+        "Intended Audience :: Science/Research",
+        "Operating System :: OS Independent",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
-        "Intended Audience :: Science/Research",
-        "Topic :: Software Development :: Libraries :: Python Modules",
-        "Operating System :: OS Independent",
         "Programming Language :: Python",
+        "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Utilities",
     ],
 )
