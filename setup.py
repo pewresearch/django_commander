@@ -24,6 +24,8 @@ setup(
     install_requires=install_requires,
     packages=find_packages(exclude=["contrib", "docs", "tests"]),
     include_package_data=True,
+    keywords="",
+    license="GPLv2+",
     classifiers=[
         "Environment :: Web Environment",
         "Framework :: Django",
@@ -35,7 +37,11 @@ setup(
         #        'Development Status :: 5 - Production/Stable',
         #        'Development Status :: 6 - Mature',
         #        'Development Status :: 7 - Inactive'
+        "Intended Audience :: Developers",
+        "Intended Audience :: Education",
+        "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
