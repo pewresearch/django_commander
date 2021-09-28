@@ -45,21 +45,21 @@ DJANGO_COMMANDER_COMMAND_FOLDERS = [
 
 ####  Caching
 
-Django Commander `DownloadIterateCommand` and `IterateDownloadCommand` commands provide caching, which can be useful 
-if you're iterating over large files that don't change very often. To enable this functionality, you need to specify 
-a `DJANGO_COMMANDER_CACHE_PATH` setting. By default this will be a local folder, but you can also use S3 by specifying 
-additional parameters:
+Django Commander `DownloadIterateCommand` and `IterateDownloadCommand` commands provide caching, which can be useful
+if you're iterating over large files that don't change very often. To enable this functionality, you need to specify a `DJANGO_COMMANDER_CACHE_PATH` setting.
 
 ```python
-
 DJANGO_COMMANDER_CACHE_PATH = "cache"
+```
 
-# For S3, define the following additional settings:
+By default this will be a local folder, but you can also use S3 by specifying additional parameters:
+
+```python
 DJANGO_COMMANDER_USE_S3 = True
 S3_BUCKET = "my_s3_bucket"
-AWS_ACCESS_KEY_ID = "my_access_key"
-AWS_SECRET_ACCESS_KEY = "my_secret_access_key"
 ```
+
+Optionally, you can also set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`, but otherwise boto3's standard methods will be used to find credentials in ~/.aws/ or defined as environment variables.
 
 ## Using Django Commander
 
@@ -218,14 +218,14 @@ class Command(DownloadIterateCommand):
     def download(self):
         df = pd.read_csv("my_csv.csv")
         return df
-        
+
     def iterate(self, df):
         for index, row in df.iterrows():
             yield [index, row, ]
-            
+
     def parse_and_save(self, index, row):
         MyModel.objects.create_or_update(
-            {"name": row["name"]}, 
+            {"name": row["name"]},
             log=self.log
         )
 
@@ -275,12 +275,12 @@ class Command(DownloadIterateCommand):
     def iterate(self):
         for obj in MyModel.objects.all():
             yield [obj, ]
-        
+
     @cache_results
     def download(self, obj):
         df = pd.read_csv("{}.csv".format(obj.pk))
         return [df, ]
-            
+
     def parse_and_save(self, obj, df):
         for index, row in df.iterrows():
             setattr(obj, row["field"], row["value"])
@@ -403,7 +403,7 @@ from django_commander.commands import commands
 return_values = commands["my_command"](PARAM_VALUE, my_option=OPTION_VALUE).run()
 for value in return_values:
   commands["another_command"](value).run()
-  
+
 # Keeping a changing parameter (like an API key) up-to-date while looping
 changing_variable = 1
 for value in MY_LIST:
