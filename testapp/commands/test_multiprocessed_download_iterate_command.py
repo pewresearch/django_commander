@@ -13,7 +13,7 @@ class Command(MultiprocessedDownloadIterateCommand):
     parameter_names = []
     dependencies = []
     test_parameters = {}
-    test_options = {"num_cores": 1}
+    test_options = {}
 
     @staticmethod
     def add_arguments(parser):

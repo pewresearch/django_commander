@@ -1,7 +1,9 @@
-import traceback, datetime
+import traceback
+import datetime
+import os
 
-from celery import shared_task
 from tqdm import tqdm
+from multiprocessing import Process
 
 try:
     from inspect import signature
@@ -18,20 +20,47 @@ class MissingDependencyException(Exception):
     pass
 
 
-@shared_task
-def run_command_task(command_name, params):
+def run_command_task(*args, **kwargs):
+    """
+    DEPRECATED
+    """
+    print(
+        "django_commander.utils.run_command_task iss deprecated, please use django_commander.utils.run_command_async"
+    )
 
-    try:
-        from django_commander.commands import commands
 
-        commands[command_name](**params).run()
-        return "Success: {}".format(command_name)
-    except Exception as e:
-        return e
+def run_command_async(command_name, **params):
+
+    """
+    Run a command asynchronously as a subprocess
+    :param command_name: Name of the command
+    :param params: Parameters and options, passed as kwargs
+    :return:
+    """
+
+    settings_module = os.environ["DJANGO_SETTINGS_MODULE"]
+    p = Process(
+        target=_command_wrapper, args=(settings_module, command_name), kwargs=params
+    )
+    p.start()
+
+
+def _command_wrapper(settings_module, command_name, **params):
+
+    import os
+    import django
+
+    os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
+    django.setup()
+    from django_commander.commands import commands
+
+    commands[command_name](**params).run()
 
 
 def log_command(handle):
     def wrapper(self, *args, **options):
+        if "num_cores" in self.options and self.options["num_cores"] > 1:
+            reset_django_connection()
         self.command = Command.objects.create_or_update(
             {"name": self.name, "parameters": self.parameters}
         )
@@ -52,6 +81,8 @@ def log_command(handle):
         self.log_id = int(self.log.pk)
         try:
             result = handle(self, *args, **options)
+            if "num_cores" in self.options and self.options["num_cores"] > 1:
+                reset_django_connection()
             if self.log:
                 self.log.end_time = datetime.datetime.now()
                 try:
@@ -59,6 +90,7 @@ def log_command(handle):
                 except:
                     # sometimes for really long-standing processes, there's a timeout SSL error
                     # so, we'll just fetch the log object again before saving and closing out
+                    reset_django_connection()
                     self.log = CommandLog.objects.get(pk=self.log_id)
                     self.log.end_time = datetime.datetime.now()
                     self.log.save()
@@ -83,11 +115,8 @@ def cache_results(func):
     def wrapper(self, *args, **options):
 
         """
-        Gets wrapped on the download function
-
-        Uses the cache folder in the logos-data S3 bucket if ENV is set to prod or prod-read-only; otherwise it
-        uses a local cache (for local/dev/test environments).  If set to prod-read-only, it doesn't save anything,
-        it just loads from the prod cache.
+        A decorator that can be added to the `download` function on a `DownloadIterateCommand` or
+        `IterateDownloadCommand`. Caches the results either locally or in S3 based on your settings.
         """
 
         hashstr = (
@@ -106,8 +135,9 @@ def cache_results(func):
             or options.get("refresh_cache", False)
         ):
             print(
-                "Refreshing cached data from source for command '%s.%s'"
-                % (str(self.__class__.name), str(func.__name__))
+                "Refreshing cached data from source for command '{}.{}'".format(
+                    str(self.__class__.name), str(func.__name__)
+                )
             )
             data = func(self, *args)
             self.cache.write(hashstr, data)
@@ -119,17 +149,32 @@ def cache_results(func):
 
 def command_multiprocess_wrapper(command_name, parameters, options, *args):
 
+    """
+    Decorator that resets Django connections for multiprocessing
+
+    :param command_name: Name of the command
+    :param parameters: Command parameters
+    :param options: Command options
+    :param args: Additional arguments
+
+    :return:
+    """
+
     params = {}
     params.update(parameters)
     params.update(options)
-    if not params.get("test", False):
-        reset_django_connection()
+    # if not params.get("test", False):
+    reset_django_connection()
     from django_commander.commands import commands
 
     return commands[command_name](**params).parse_and_save(*args)
 
 
 def test_commands():
+
+    """
+    Loops over all commands, and runs any that have defined `test_parameters`.
+    """
 
     from django_commander.commands import commands
 
@@ -147,6 +192,9 @@ def test_commands():
 
 
 def clear_unfinished_command_logs():
+    """
+    Clears out extra logs in the database for commands that didn't log an end time.
+    """
 
     for command in tqdm(Command.objects.all(), desc="Clearing extra logs"):
         command.logs.filter(error__isnull=False).delete()
