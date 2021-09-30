@@ -113,7 +113,6 @@ class CommandLog(BasicExtendedModel):
     error = PickledObjectField(
         null=True, help_text="The error returned by the command (if applicable)"
     )
-    celery_task_id = models.TextField(null=True)
 
     def __str__(self):
 
@@ -124,13 +123,6 @@ class CommandLog(BasicExtendedModel):
         else:
             status = "RUNNING"
         return "%s (pk=%s): %s" % (str(self.command), str(self.pk), status)
-
-    @property
-    def celery_task(self):
-
-        return get_model("TaskResult", app_name="django_celery_results").objects.get(
-            task_id=self.celery_task_id
-        )
 
 
 from django.db.models.signals import m2m_changed
