@@ -79,8 +79,6 @@ class BaseTests(DjangoTransactionTestCase):
             ),
             hash=False,
             use_s3=settings.DJANGO_COMMANDER_USE_S3,
-            aws_access=settings.AWS_ACCESS_KEY_ID,
-            aws_secret=settings.AWS_SECRET_ACCESS_KEY,
             bucket=settings.S3_BUCKET,
         )
         value = cache.read("test_download_iterate_commanddownload(){}")
@@ -111,8 +109,6 @@ class BaseTests(DjangoTransactionTestCase):
             ),
             hash=False,
             use_s3=settings.DJANGO_COMMANDER_USE_S3,
-            aws_access=settings.AWS_ACCESS_KEY_ID,
-            aws_secret=settings.AWS_SECRET_ACCESS_KEY,
             bucket=settings.S3_BUCKET,
         )
         for name in ["bob", "shelly"]:
@@ -186,8 +182,6 @@ class BaseTests(DjangoTransactionTestCase):
             ),
             hash=False,
             use_s3=settings.DJANGO_COMMANDER_USE_S3,
-            aws_access=settings.AWS_ACCESS_KEY_ID,
-            aws_secret=settings.AWS_SECRET_ACCESS_KEY,
             bucket=settings.S3_BUCKET,
         )
         value = cache.read("test_multiprocessed_download_iterate_commanddownload(){}")
@@ -223,8 +217,6 @@ class BaseTests(DjangoTransactionTestCase):
             ),
             hash=False,
             use_s3=settings.DJANGO_COMMANDER_USE_S3,
-            aws_access=settings.AWS_ACCESS_KEY_ID,
-            aws_secret=settings.AWS_SECRET_ACCESS_KEY,
             bucket=settings.S3_BUCKET,
         )
         for name in ["bob", "shelly"]:
