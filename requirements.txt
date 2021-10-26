@@ -3,7 +3,7 @@ boto3>=1.4.4
 boto>=2.46.1
 chardet>=2.3.0
 cython>=0.25.2
-django-pewtils>=0.1.4
+django-pewtils>=0.2.0
 django-picklefield>=3.0.1
 django-rq>=0.9.5
 django>=3.1,<3.2
@@ -20,7 +20,7 @@ nilsimsa>=0.3.8
 nltk>=3.2.2
 numpy>=1.20.0
 pandas>=0.25.0
-pewtils>=1.0.9
+pewtils>=1.1.0
 polyglot
 psycopg2
 python-dateutil>=2.6.0
