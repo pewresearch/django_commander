@@ -50,5 +50,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           prerelease: False
+          body_path: CHANGELOG.md
           files: |
             *.whl
