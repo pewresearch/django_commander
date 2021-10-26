@@ -15,7 +15,7 @@ on:
 jobs:
   unit-tests:
     name: unit-tests
-    runs-on: django_commander-runner
+    runs-on: django-commander-runner
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
