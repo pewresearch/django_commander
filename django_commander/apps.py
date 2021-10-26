@@ -14,8 +14,6 @@ class DjangoCommanderConfig(AppConfig):
 
         for setting, default in [
             ("DJANGO_COMMANDER_COMMAND_FOLDERS", []),
-            ("AWS_ACCESS_KEY_ID", None),
-            ("AWS_SECRET_ACCESS_KEY", None),
             ("S3_BUCKET", None),
             ("DJANGO_COMMANDER_CACHE_PATH", "cache"),
             ("DJANGO_COMMANDER_USE_S3", False),
