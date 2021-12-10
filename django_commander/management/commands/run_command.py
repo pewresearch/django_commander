@@ -34,7 +34,6 @@ class Command(BaseCommand):
         parser.add_argument("subcommand_name", type=str)
         if self.subcommand_name in commands.keys():
             parser = commands[self.subcommand_name].create_or_modify_parser(parser)
-        parser.add_argument("--multiprocess", default=False, action="store_true")
 
         return parser
 
