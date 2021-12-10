@@ -49,6 +49,27 @@ class Command(BaseCommand):
             self.subcommand_name = argv[2]
             parser = self.create_parser("run_command", self.subcommand_name)
 
+            if "--test" in argv[2:]:
+                print("Testing {]".format(self.subcommand_name))
+                print(
+                    "Test parameters: {}".format(
+                        commands[self.subcommand_name].test_parameters
+                    )
+                )
+                print(
+                    "Test options: {}".format(
+                        commands[self.subcommand_name].test_options
+                    )
+                )
+                new_args = argv[:3]
+                for p in commands[self.subcommand_name].parameter_names:
+                    new_args.append(
+                        str(commands[self.subcommand_name].test_parameters[p])
+                    )
+                for k, v in commands[self.subcommand_name].test_options.items():
+                    new_args.extend(["--{}".format(k), str(v)])
+                argv = new_args
+
             options = {}
             for opt, val in parser.parse_args(argv[2:])._get_kwargs():
                 options[opt] = val
