@@ -283,6 +283,15 @@ class BaseTests(DjangoTransactionTestCase):
         self.assertEqual(Parent.objects.filter(name="bobby").count(), 1)
         self.assertEqual(Child.objects.filter(name="bobby jr.").count(), 1)
 
+    def test_command_test_parameters(self):
+
+        from django_commander.utils import run_command_async
+
+        run_command_async("test_command", test=True)
+        time.sleep(5)
+        self.assertEqual(Parent.objects.filter(name="bob").count(), 1)
+        self.assertEqual(Child.objects.filter(name="suzy").count(), 1)
+
     def tearDown(self):
         from django.conf import settings
         import shutil, os
