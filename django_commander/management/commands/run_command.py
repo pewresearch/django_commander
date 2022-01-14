@@ -50,7 +50,7 @@ class Command(BaseCommand):
             parser = self.create_parser("run_command", self.subcommand_name)
 
             if "--test" in argv[2:]:
-                print("Testing {]".format(self.subcommand_name))
+                print("Testing {}".format(self.subcommand_name))
                 print(
                     "Test parameters: {}".format(
                         commands[self.subcommand_name].test_parameters
