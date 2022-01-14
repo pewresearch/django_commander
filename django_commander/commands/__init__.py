@@ -26,7 +26,6 @@ from django_commander.utils import (
 
 
 class BasicCommand(object):
-
     """
     The base `django_commander` command class.
     """
@@ -228,7 +227,6 @@ class BasicCommand(object):
 
 
 class DownloadIterateCommand(BasicCommand):
-
     """
     This command class is designed to first load/download some sort of file, iterate over it, and then do something with
     each value. Accordingly, it requires four functions to be defined:
@@ -310,7 +308,6 @@ class DownloadIterateCommand(BasicCommand):
 
 
 class IterateDownloadCommand(BasicCommand):
-
     """
     This type of command operates in the opposite manner as `DownloadIterateCommand`. It expects to loop over something
     (like a list of IDs) and download/load something for each of the yielded values. The results, in turn, are each
@@ -402,7 +399,6 @@ class IterateDownloadCommand(BasicCommand):
 
 
 class MultiprocessedIterateDownloadCommand(BasicCommand):
-
     """
     A multiprocessed version of the `IterateDownloadCommand`. Functions the same way, but accepts an additional
     `num_cores` parameter (corresponding to the number of processors to use during multiprocessing) and it will apply
@@ -486,7 +482,6 @@ class MultiprocessedIterateDownloadCommand(BasicCommand):
 
 
 class MultiprocessedDownloadIterateCommand(BasicCommand):
-
     """
     A multiprocessed version of the `DownloadIterateCommand`. Functions the same way, but accepts an additional
     `num_cores` parameter (corresponding to the number of processors to use during multiprocessing) and it will apply

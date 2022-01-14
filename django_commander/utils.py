@@ -125,7 +125,11 @@ def cache_results(func):
             + str(args)
             + str(self.parameters)
         )
-        if self.options["refresh_cache"] or options.get("refresh_cache"):
+        if (
+            self.options["refresh_cache"]
+            or options.get("refresh_cache")
+            or self.options.get("test")
+        ):
             data = None
         else:
             data = self.cache.read(hashstr)
@@ -133,6 +137,7 @@ def cache_results(func):
             not is_not_null(data)
             or self.options["refresh_cache"]
             or options.get("refresh_cache", False)
+            or self.options.get("test")
         ):
             print(
                 "Refreshing cached data from source for command '{}.{}'".format(
