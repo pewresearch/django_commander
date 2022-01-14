@@ -9,7 +9,7 @@ spec:
   template:
     spec:
       repository: pewresearch/django_commander
-      image: 458280294434.dkr.ecr.us-east-1.amazonaws.com/labs-actions-runner@sha256:796eea91dfc248ca2f7af1703ffe24bde833914dca2f60fafb762a34dd5accba
+      image: 458280294434.dkr.ecr.us-east-1.amazonaws.com/labs-actions-runner@sha256:ca6542f7d53b73b1dc7cc024f4b2d3d197dff2c0f8f371289e3c16092f5c418c
       imagePullPolicy: Always
       serviceAccountName: labs-runner
       labels:
