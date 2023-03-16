@@ -23,10 +23,10 @@ class DjangoCommanderConfig(AppConfig):
             if not hasattr(settings, setting):
                 setattr(settings, setting, default)
 
-        DJANGO_COMMANDER_CACHE_PATH = os.path.join(
-            settings.DJANGO_COMMANDER_CACHE_PATH, "django_commander"
-        )
-        setattr(settings, "DJANGO_COMMANDER_CACHE_PATH", DJANGO_COMMANDER_CACHE_PATH)
+        LOCAL_CACHE_PATH = os.path.join(settings.LOCAL_CACHE_ROOT, "django_commander")
+        setattr(settings, "DJANGO_COMMANDER_LOCAL_CACHE_PATH", LOCAL_CACHE_PATH)
+        S3_CACHE_PATH = os.path.join(settings.S3_CACHE_ROOT, "django_commander")
+        setattr(settings, "DJANGO_COMMANDER_S3_CACHE_PATH", S3_CACHE_PATH)
 
         templates = settings.TEMPLATES
         new_templates = []
