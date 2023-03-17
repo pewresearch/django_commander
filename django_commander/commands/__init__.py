@@ -205,8 +205,8 @@ class BasicCommand(object):
     def cleanup(self):
 
         raise NotImplementedError
-    
-    
+
+
 class DownloadIterateCommand(BasicCommand):
 
     def __init__(self, **options):
