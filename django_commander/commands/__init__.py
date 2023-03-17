@@ -197,7 +197,7 @@ class BasicCommand(object):
         self.log = None
         if dispatched:
             self.check_dependencies()
-        # self.cache_identifier = self.name + str(self.parameters)
+
         cache_params = {
             'use_s3': True,
             'aws_access': os.environ.get("AWS_ACCESS_KEY_ID", None),
@@ -255,7 +255,6 @@ class BasicCommand(object):
                         params[p] = params[p](self)
                     else:
                         params[p] = str(params[p])
-                    # logs = logs.filter(args__regex="%s" % str(params[p]))
                     logs = logs.filter(command__parameters__regex=r"[\"']?%s[\"']?\: [\"']?%s[\"']?" % (p, params[p]))
                 if logs.count() == 0:
                     missing.append((d, params))
@@ -314,7 +313,6 @@ class DownloadIterateCommand(BasicCommand):
         """
         self.check_dependencies()
         dargs = self.download()
-        # if type(dargs) != list: dargs = [dargs, ]
         for iargs in self.iterate(*dargs):
             if any([is_not_null(a) for a in iargs]):
                 self.parse_and_save(*iargs)
@@ -356,7 +354,6 @@ class IterateDownloadCommand(BasicCommand):
         self.check_dependencies()
         for iargs in self.iterate():
             dargs = self.download(*iargs)
-            # if type(dargs) != list: dargs = [dargs, ]
             if any([is_not_null(a) for a in dargs]):
                 try:
                     self.parse_and_save(*(dargs + iargs))
